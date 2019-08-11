@@ -1,0 +1,155 @@
+h1 {
+    background-color: pink;
+    color: rgb(21, 164, 31);
+    font-family: sans-serif;
+}
+
+button {
+    color: white;
+    background-color: rgb(170, 31, 115);
+}
+
+footer {
+    background-color: pink;
+    color: #C04040;
+    margin-top: 20px;
+}
+
+.navbar-top {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    display: block;
+    position: fixed;
+    top: 50px;
+  }
+}
+
+
+.card {
+}
+
+.card_image {
+    max-width: 25vw;
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#map46logo {
+    content: url("../assets/map46.svg");
+    width: 40px;
+    height: 40px;
+    margin-left: 3px;
+}
+
+#sitelogo {
+    content: url("../assets/Proud.jpg");
+    width: 60px;
+    height: 70px;
+    margin: 1px;
+}
+
+#sitename:before {
+    content: "Pigeon Messenger Service";
+    margin: 28px;
+}
+
+
+/* MAP STUFF ============================================================= */
+.sliders {
+    width: 600px;
+    margin: 10px;
+}
+
+.ol-react-map {
+    width: 800px;
+}
+
+.ol-full-screen .ol-rotate .ol-zoom-extent .ol-mouse-position {
+    position: relative;
+    top: 4px;
+    width: 16px;
+}
+
+.ol-zoom-in {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.ol-zoom-out {
+    position: absolute;
+    top: 0px;
+    left: 30px;
+}
+
+.ol-zoom-extent {
+    top: 4px;
+    left: 38px;
+}
+
+.ol-mouse-position {
+    font-family: sans-serif;
+    font-size: 10pt;
+    position: absolute;
+    background-color: white;
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid #cccccc;
+    left: 48px;
+}
+.ol-mouse-position:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+
+.ol-full-screen {
+    right: 4px;
+}
+
+.ol-rotate {
+    right: 32px;
+}
+
+.ol-overviewmap {
+    position: relative;
+    left: 4px;
+    bottom: 160px;
+    width: 155px;
+    height: 155px;
+}
+
+.ol-scale-line {
+    font-family: arial;
+    position: relative;
+    left: 180px;
+    bottom: 30px;
+    width: 180px;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.ol-zoomslider {
+    left: 8px;
+    top: 70px;
+    background-color: rgba(50,50,240,0.4);
+}
+
+.ol-attribution {
+    position: relative;
+    bottom: 40px;
+    right: 10px;
+    width: 400px;
+    font-family: cursive;
+}

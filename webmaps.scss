@@ -1,0 +1,45 @@
+@import "config/config.scss";
+
+﻿body {
+    background-color: darkgreen;
+}
+
+#top {
+    height: 72px;
+    background-color: $map46_bg;
+}
+
+#bottom {
+    background-color: $map46_bg;
+}
+
+#main {
+    background-color: $map46_bg;
+}
+
+#menu {
+    background-color: $map46_bg;
+}
+
+#nav {
+    color: white;
+    background-color: gray;
+}
+
+button {
+    color: yellow;
+    background-color: darkblue;
+}
+
+/* ======================================================================== */
+
+/* Define the size and position in the css */
+.ol-compassctrl.left
+{
+    bottom: 0;
+    left: 30;
+    width: 80px;
+    height: 80px;
+    -webkit-transform: translate(0,-50%);
+    transform: translate(0,-50%);
+}

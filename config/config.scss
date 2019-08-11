@@ -1,0 +1,20 @@
+$map46_bg: lightgray;
+.banner:before {
+    content: url('/config/logo.png');
+    position: absolute;
+    top: -14px;
+    left: -65px;
+}
+.banner {
+    position:relative;
+    left:80px;
+    top:20px;
+    content: "taxlots";
+}
+.banner:after {
+    font-size: 28pt;
+    position:relative;
+    left:0px;
+    top:-25px;
+    content: "Clatsop County";
+}
