@@ -14,7 +14,8 @@ import {toLonLat} from 'ol/proj'
 
 import {myGeoServer, workspace} from '../constants'
 
-import {Style, Circle, Fill, Icon, Stroke, Text} from 'ol/style'
+import Style from 'ol/style/Style'
+import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
 import Collection from 'ol/Collection'
 import {click, platformModifierKeyOnly} from 'ol/events/condition'
 
@@ -47,19 +48,31 @@ const aerials = [
     { label: "DOGAMI HighestHitHS", value: { source: 'WMS',  url: "https://gis.dogami.oregon.gov/arcgis/services/Public/HighestHitHS/ImageServer/WMSServer?Layers=0" }}
 ];
 
-const oregonExplorerHydro = "https://navigator.state.or.us/ArcGIS/rest/services/Framework/Hydro_GeneralMap/MapServer";
-const lakes       = oregonExplorerHydro + "/0"
-const streams     = oregonExplorerHydro + "/1"
-const waterbodies = oregonExplorerHydro + "/2"
-const rivers      = oregonExplorerHydro + "/3"
-
 // DOGAMI "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
-const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public/"
-const dogamiLandslideUrl = dogamiServer + "Landslide_Susceptibility/ImageServer"
+const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
+const dogamiLandslideUrl = dogamiServer + "/Landslide_Susceptibility/ImageServer"
 const dogamiSlidoUrl = dogamiServer + "/SLIDO3_4/MapServer"
+
+const waterBodiesUrl = "https://navigator.state.or.us/arcgis/rest/services/Framework/Hydro_GeneralMap/MapServer/1"
+const waterBodiesStyle = new Style({
+    stroke: new Stroke({color: [150, 150, 255, 1], width:1}),
+    fill: new Fill({color: [255, 0, 255, 1]}),
+});
 
 // FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
 const FEMA_NFHL_arcgisREST = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
+const femaPLSSUrl = FEMA_NFHL_arcgisREST + '/5';
+const plssStyle = new Style({
+    stroke: new Stroke({color: [0, 0, 0, 1], width:1}),
+    //fill: new Fill({color: [255, 0, 0, .250]}),
+});
+
+const oregonAGOL = "https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services"
+const zoningFeatureServer = oregonAGOL + "/Oregon_Zoning_2017/FeatureServer/0";   // 2017
+const zoningStyle = new Style({
+    stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
+    fill: new Fill({color: [76, 129, 205, .250]}),
+});
 
 const taxlotService = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services/Taxlots/FeatureServer"
 const taxlotLabels   = taxlotService + "/0";
@@ -264,6 +277,14 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
                 </layer.VectorTile>
                 */}
 
+                <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} visible={false}>
+                    <source.ImageArcGISRest url={dogamiLandslideUrl}/>
+                </layer.Image>
+
+                <layer.Image title="DOGAMI Slides" opacity={.90} visible={false}>
+                <source.ImageArcGISRest url={dogamiSlidoUrl}/>
+                </layer.Image>
+
                 {/* WFS */}
                 <layer.Vector title="Taxlots" style={taxlotStyle} maxResolution={10}>
                     <source.JSON url={taxlotUrl} loader={taxlotFormat}>
@@ -272,9 +293,17 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
                     </source.JSON>
                 </layer.Vector>
 
-                <layer.Image title="DOGAMI Slides" opacity={.90} visible={true}>
-                    <source.ImageArcGISRest url={dogamiSlidoUrl}/>
-                </layer.Image>
+                <layer.Vector title="Oregon Zoning" style={zoningStyle}>
+                    <source.JSON url={zoningFeatureServer} loader="esrijson"/>
+                </layer.Vector>
+
+                <layer.Vector title="PLSS (FEMA)" style={plssStyle}>
+                    <source.JSON url={femaPLSSUrl} loader="esrijson"/>
+                </layer.Vector>
+
+                <layer.Vector title="Water" style={waterBodiesStyle}>
+                    <source.JSON url={waterBodiesUrl} loader="esrijson"/>
+                </layer.Vector>
 
                 {/*
                 <layer.Vector name="Geolocation">
