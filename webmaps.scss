@@ -32,6 +32,11 @@ button {
 }
 
 /* ======================================================================== */
+.layerswitcher-opacity {
+    display: none;
+}
+
+/* ======================================================================== */
 
 /* Define the size and position in the css */
 .ol-compassctrl.left
@@ -42,4 +47,16 @@ button {
     height: 80px;
     -webkit-transform: translate(0,-50%);
     transform: translate(0,-50%);
+}
+
+#sitelogo {
+    content: url("./assets/county_sea_lion.png");
+    width: 75px;
+    height: 75px;
+    margin: 1px;
+}
+
+#sitename:before {
+    content: "Clatsop County Webmaps";
+    margin: 28px;
 }

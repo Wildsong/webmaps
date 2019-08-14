@@ -39,7 +39,7 @@ const MapPage = ({center, zoom, setMapCenter}) => {
                     <Map46 />
                     </Col>
                     <Col>
-                        <control.LayerSwitcher show_progress={true} collapsed={false} />
+                        <control.LayerSwitcher reordering={false} show_progress={true} collapsed={false} />
                     </Col>
                 </Row>
             </Container>

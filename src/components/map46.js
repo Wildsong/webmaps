@@ -6,62 +6,34 @@ import Select from 'react-select' // eslint-disable-line no-unused-vars
 import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
 import BootstrapTable from 'react-bootstrap-table-next' // eslint-disable-line no-unused-vars
 import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
+import BaseMap from './basemap' // eslint-disable-line no-unused-vars
 import Geocoder from './geocoder'
 import Position from './position'
 
 import {toStringXY} from 'ol/coordinate'
 import {toLonLat} from 'ol/proj'
 
-import {myGeoServer, workspace} from '../constants'
+import {myGeoServer, workspace, MAXRESOLUTION, COUNTY_EXTENT} from '../constants'
 
 import Style from 'ol/style/Style'
 import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
 import Collection from 'ol/Collection'
 import {click, platformModifierKeyOnly} from 'ol/events/condition'
 
-// Base layers
-const esriClarityUrl = 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/' +
-                    'World_Imagery/MapServer/tile/{z}/{y}/{x}'
+const gpxStyle = new Style({stroke: new Stroke({color: 'rgba(255, 0, 0, 1.0)', width:1.5})});
 
-/*
-TODO = if a photo will not be visible in current extent, disable it in the list
-*/
-const astoriagis = "https://gis.astoria.or.us/cgi-bin/mapserv.exe?SERVICE=WMS&VERSION=1.1.1";
-const oregonExplorer = "https://imagery.oregonexplorer.info/arcgis" + '/rest' + '/services';
-const aerials = [
-    { label: "no photo", value: {source: "WMS", url: ""}  },
-    { label: "Astoria 1966", value: {source: "WMS", url: astoriagis + "&MAP=%2Fms4w%2Fapps%2Fastoria31_Public%2Fhtdocs%2Fastoria31%2Fmaps%2F.%2Fastoria_aerial_bw_1966.map&LAYERS=aerials1966" }},
-    { label: "Astoria 1976", value: {source: "WMS", url: astoriagis + "&MAP=%2Fms4w%2Fapps%2Fastoria31_Public%2Fhtdocs%2Fastoria31%2Fmaps%2F.%2Fastoria_aerial_bw_1976.map&LAYERS=aerials1976" }},
-    { label: "Astoria 1987", value: {source: "WMS", url: astoriagis + "&MAP=%2Fms4w%2Fapps%2Fastoria31_Public%2Fhtdocs%2Fastoria31%2Fmaps%2F.%2Fastoria_aerial_bw_1987.map&LAYERS=aerials1987" }},
-    { label: "Astoria 1994", value: {source: "WMS", url: astoriagis + "&MAP=%2Fms4w%2Fapps%2Fastoria31_Public%2Fhtdocs%2Fastoria31%2Fmaps%2F.%2Fastoria_aerial_bw_1994.map&LAYERS=aerials1994" }},
-    { label: "Astoria 2004", value: {source: "WMS", url: astoriagis + "&MAP=%2Fms4w%2Fapps%2Fastoria31_Public%2Fhtdocs%2Fastoria31%2Fmaps%2F.%2Fastoria_aerial_hires_2004.map&LAYERS=aerials2004" }},
-    { label: "Astoria 2010", value: {source: "WMS", url: astoriagis + "&MAP=%2Fms4w%2Fapps%2Fastoria31_Public%2Fhtdocs%2Fastoria31%2Fmaps%2F.%2Fastoria_aerial_hires_2010.map&LAYERS=aerials2010" }},
-    { label: "Astoria 2015", value: {source: "WMS", url: astoriagis + "&MAP=%2Fms4w%2Fapps%2Fastoria31_Public%2Fhtdocs%2Fastoria31%2Fmaps%2F.%2Fair_2015.map&LAYERS=air_2015"}},
-
-    { label: "NAIP 2016", value: {source: 'ArcGISRest', url: oregonExplorer + "/NAIP_2016/NAIP_2016_WM/ImageServer'; // + '/WMSServer?Layers=0" }},
-    { label: "NAIP 2014", value: {source: "WMS", url: oregonExplorer + "/NAIP_2014/NAIP_2014_WM/ImageServer/WMSServer?Layers=0" }},
-    { label: "NAIP 2012", value: {source: "WMS", url: oregonExplorer + "/NAIP_2012/NAIP_2012_WM/ImageServer/WMSServer?Layers=0" }},
-    { label: "NAIP 2011", value: {source: "WMS", url: oregonExplorer + "/NAIP_2011/NAIP_2011_WM/ImageServer/WMSServer?Layers=0" }},
-    // there are more NAIP photos...
-
-    { label: "DOGAMI BareEarthHS",  value: { source: 'WMS',  url: "https://gis.dogami.oregon.gov/arcgis/services/Public/BareEarthHS/ImageServer/WMSServer?Layers=0"  }},
-    { label: "DOGAMI HighestHitHS", value: { source: 'WMS',  url: "https://gis.dogami.oregon.gov/arcgis/services/Public/HighestHitHS/ImageServer/WMSServer?Layers=0" }}
-];
-
-// DOGAMI "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
+// DOGAMI
 const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
 const dogamiLandslideUrl = dogamiServer + "/Landslide_Susceptibility/ImageServer"
 const dogamiSlidoUrl = dogamiServer + "/SLIDO3_4/MapServer"
 
-const waterBodiesUrl = "https://navigator.state.or.us/arcgis/rest/services/Framework/Hydro_GeneralMap/MapServer/1"
-const waterBodiesStyle = new Style({
-    stroke: new Stroke({color: [150, 150, 255, 1], width:1}),
-    fill: new Fill({color: [255, 0, 255, 1]}),
-});
+// FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
+const ccPLSSUrl = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/services/plss/MapServer"
 
 // FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
 const FEMA_NFHL_arcgisREST = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
 const femaPLSSUrl = FEMA_NFHL_arcgisREST + '/5';
+
 const plssStyle = new Style({
     stroke: new Stroke({color: [0, 0, 0, 1], width:1}),
     //fill: new Fill({color: [255, 0, 0, .250]}),
@@ -140,14 +112,13 @@ const selectedStyle = new Style({ // yellow
 /* ========================================================================== */
 
 const Map46 = ({title, center, zoom, setMapCenter}) => {
-    const [aerialUrl, setAerialUrl] = useState(aerials[0].value.url) // 1966
-    const [aerialSource, setAerialSource] = useState(aerials[0].value.source); // 1966
-    const [aerialVisible, setAerialVisible] = useState(false);
     const [mousePosition, setMousePosition] = useState([0,0]);
     const [popupPosition, setPopupPosition] = useState(); // where it will show up on screen
     const [popupText, setPopupText] = useState('HERE');   // text to display in popup
     const [selectCount, setSelectCount] = useState(0);
     const [rows, setRows] = useState([]);
+
+    const gpxFeatures = new Collection();
 
     const showMousePosition = (e) => {
         const lonlat = toLonLat(e.coordinate)
@@ -223,17 +194,6 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
         e.stopPropagation(); // this stops draw interaction
     }
 
-    const selectAerialPhoto = (e) => {
-        if (e.value.url.length>0) {
-            console.log('selectAerialPhoto', e);
-            setAerialUrl(e.value.url);
-            setAerialSource(e.value.source);
-            setAerialVisible(true);
-        } else {
-            setAerialVisible(false);
-        }
-    }
-
     const popup = React.createElement('div',
         { className:"ol-popup" },
         popupText
@@ -246,63 +206,54 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
         const new_center_wm = v.getCenter()
         const new_center = toLonLat(new_center_wm)
         const new_zoom = v.getZoom();
-        setMapCenter(new_center, new_zoom);
+        try {
+            console.log("onMapMove", e, new_center)
+            setMapCenter(new_center, new_zoom);
+        } catch (err) {
+            console.warn(err)
+        }
         return false;
     }
 
     return (
         <>
             <Geocoder/><br />
-            <Select options={ aerials } onChange={ selectAerialPhoto } />
 
-            <Map onPointerMove={showMousePosition} onMoveEnd={onMapMove}>
-                <layer.Tile title="ESRI Clarity" baseLayer={true} visible={false}>
-                    <source.XYZ url={esriClarityUrl}/>
-                </layer.Tile>
+            <Map>
+                <BaseMap/>
 
-                {/* Alternatives for streets: conventional or MVT */}
-                <layer.Tile title="OpenStreetMap" baseLayer={true} visible={true}>
-                    <source.OSM/>
-                </layer.Tile>
-                {/* MVT
-                <layer.VectorTile title="Mapbox Streets" baseLayer={true} visible={true} style={mapboxStyle} declutter={true}>
-                    <source.VectorTile url={mapboxStreetsUrl}/>
-                </layer.VectorTile>
-
-                <layer.VectorTile title="Taxlots" declutter={true} crossOrigin="anonymous" style={taxlotStyle}>
-                    <source.VectorTile url={taxlotUrl}>
-                        <interaction.Select features={selectedFeatures} style={selectedStyle} condition={click} selected={onSelectEvent}/>
-                        <interaction.SelectDragBox condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                    </source.VectorTile>
-                </layer.VectorTile>
-                */}
-
-                <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} visible={false}>
+                <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={COUNTY_EXTENT}>
                     <source.ImageArcGISRest url={dogamiLandslideUrl}/>
                 </layer.Image>
 
-                <layer.Image title="DOGAMI Slides" opacity={.90} visible={false}>
+                <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={COUNTY_EXTENT}>
                 <source.ImageArcGISRest url={dogamiSlidoUrl}/>
                 </layer.Image>
 
                 {/* WFS */}
-                <layer.Vector title="Taxlots" style={taxlotStyle} maxResolution={10}>
+                <layer.Vector title="Taxlots" style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                     <source.JSON url={taxlotUrl} loader={taxlotFormat}>
                         <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
                         <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
                     </source.JSON>
                 </layer.Vector>
 
-                <layer.Vector title="Oregon Zoning" style={zoningStyle}>
+                <layer.Vector title="Oregon Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={COUNTY_EXTENT}>
                     <source.JSON url={zoningFeatureServer} loader="esrijson"/>
                 </layer.Vector>
 
-                <layer.Vector title="PLSS (FEMA)" style={plssStyle}>
+                <layer.Vector title="PLSS (FEMA)" style={plssStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                     <source.JSON url={femaPLSSUrl} loader="esrijson"/>
                 </layer.Vector>
 
-                <layer.Vector title="Water" style={waterBodiesStyle}>
-                    <source.JSON url={waterBodiesUrl} loader="esrijson"/>
+                <layer.Image title="PLSS (Clatsop County)" style={plssStyle} reordering={false}>
+                    <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
+                </layer.Image>
+
+                <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
+                    <source.Vector features={gpxFeatures}>
+                    <interaction.DragAndDrop />
+                    </source.Vector>
                 </layer.Vector>
 
                 {/*
