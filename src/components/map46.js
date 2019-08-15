@@ -14,6 +14,7 @@ import {toStringXY} from 'ol/coordinate'
 import {toLonLat} from 'ol/proj'
 
 import {myGeoServer, workspace, MAXRESOLUTION, COUNTY_EXTENT} from '../constants'
+import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
 
 import Style from 'ol/style/Style'
 import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
@@ -47,7 +48,7 @@ const zoningStyle = new Style({
 });
 
 const taxlotService = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services/Taxlots/FeatureServer"
-const taxlotLabels   = taxlotService + "/0";
+const taxlotLabels = taxlotService + "/0";
 const taxlotFeatures = taxlotService + "/1";
 
 // Where the taxmap PDFs live
@@ -252,7 +253,7 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
 
                 <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
                     <source.Vector features={gpxFeatures}>
-                    <interaction.DragAndDrop />
+                    <interaction.DragAndDrop fit={true}/>
                     </source.Vector>
                 </layer.Vector>
 
@@ -270,6 +271,10 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
                     positioning="center-center"
                 />
                 */}
+
+                <control.FullScreen/>
+                <control.ScaleLine units="us"/>
+                <control.OverviewMap layers={ovLayers}/>
             </Map>
 
             <Position coord={mousePosition} zoom={zoom} />

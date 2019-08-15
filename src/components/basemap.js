@@ -1,7 +1,10 @@
 import React, {useState} from 'react'; // eslint-disable-line no-unused-vars
 import {control, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 
-// Base layers
+// BaseMap in WMTS format
+const ccgisBasemap = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services/Clatsop_County_basemap/MapServer"
+
+// ESRI Clarity aerial
 const esriClarityUrl = 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/' +
                     'World_Imagery/MapServer/tile/{z}/{y}/{x}'
 
@@ -11,6 +14,7 @@ const bareEarthHSUrl = "https://gis.dogami.oregon.gov/arcgis/services/Public/Bar
 /* ========================================================================== */
 
 const BaseMap = () => {
+
     return (
         <>
             <layer.Image title="Bare Earth Hillshade" reordering={false}>
@@ -22,7 +26,7 @@ const BaseMap = () => {
             </layer.Tile>
 
             {/* Alternatives for streets: conventional or MVT */}
-            <layer.Tile title="OpenStreetMap" baseLayer={true} reordering={false} visible={true} opacity={.75}>
+            <layer.Tile title="OpenStreetMap" baseLayer={true} reordering={false} visible={false} opacity={.75}>
                 <source.OSM/>
             </layer.Tile>
             {/* MVT
@@ -37,6 +41,10 @@ const BaseMap = () => {
                 </source.VectorTile>
             </layer.VectorTile>
             */}
+
+            <layer.Tile title="Clatsop County basemap"  baseLayer={true} opacity={.80}>
+                <source.TileArcGISRest url={ccgisBasemap}/>
+            </layer.Tile>
         </>
     );
 }
