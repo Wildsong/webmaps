@@ -32,8 +32,12 @@ button {
 }
 
 /* ======================================================================== */
+/* turn off the opacity sliders */
 .layerswitcher-opacity {
     display: none;
+}
+.ore-map {
+    position: absolute;
 }
 
 /* ======================================================================== */

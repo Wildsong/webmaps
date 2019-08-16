@@ -11,9 +11,10 @@ import Geocoder from './geocoder'
 import Position from './position'
 
 import {toStringXY} from 'ol/coordinate'
-import {toLonLat} from 'ol/proj'
+import {toLonLat, fromLonLat} from 'ol/proj'
 
-import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION, EXTENT_WM} from '../constants'
+import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
+import {astoria_ll, DEFAULT_CENTER, XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
 import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
 
 import Style from 'ol/style/Style'
@@ -41,6 +42,14 @@ const markerStyle = new Style({
         stroke: new Stroke({color: 'red', width: 1})
     })
 });
+
+// extent rectangle
+const xform = (coordinates) => {
+    for (let i = 0; i < coordinates.length; i+=2) {
+        [coordinates[i], coordinates[i+1]] = fromLonLat([coordinates[i], coordinates[i+1]]);
+    }
+    return coordinates
+}
 
 // FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
 const FEMA_NFHL_arcgisREST = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
@@ -119,6 +128,11 @@ const selectedStyle = new Style({ // yellow
     stroke: new Stroke({color: 'rgba(255, 255, 0, 1.0)', width:2}),
     fill:   new Fill({color: 'rgba(255, 255, 0, .001)'}),
 });
+
+const yellowStyle = new Style({
+    stroke: new Stroke({color: 'yellow', width: 1})
+});
+
 
 /* ========================================================================== */
 
@@ -265,6 +279,16 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
 
                 <layer.Vector title="Web markers" style={markerStyle}>
                     <source.JSON url={webMarkersUrl} loader="geojson"/>
+                </layer.Vector>
+
+                <layer.Vector title="Extent rectangle" opacity={1}>
+                    <source.Vector>
+                        <Feature id="Rect1" style={yellowStyle}>
+                            <geom.LineString transform={xform}>
+                                { [[XMIN,YMIN],[XMIN,YMAX],[XMAX,YMAX],[XMAX,YMIN],[XMIN,YMIN]] }
+                            </geom.LineString>
+                        </Feature>
+                    </source.Vector>
                 </layer.Vector>
 
                 {/*

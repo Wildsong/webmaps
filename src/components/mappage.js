@@ -11,7 +11,7 @@ import {MapProvider} from '@map46/ol-react/map-context'; // eslint-disable-line 
 import {Map as olMap, View as olView} from 'ol'
 import {fromLonLat} from 'ol/proj'
 
-import 'ol/ol.css'
+//import 'ol/ol.css'
 import 'ol-ext/dist/ol-ext.css'
 
 import {DEFAULT_CENTER, MINZOOM, MAXZOOM} from '../constants'
@@ -28,21 +28,20 @@ const MapPage = ({center, zoom, setMapCenter}) => {
     return (
         <>
             <MapProvider map={theMap}>
-            <Container>
+            <Map46 />
+            <control.LayerSwitcher extent={true} reordering={false} show_progress={true} collapsed={false} />
+{/*
+                <Container>
                 <Row>
                     <Col>
-                    <MapNavbar />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                    <Map46 />
+                    mapnavbar<MapNavbar />
                     </Col>
                     <Col>
-                        <control.LayerSwitcher reordering={false} show_progress={true} collapsed={false} />
                     </Col>
                 </Row>
             </Container>
+            */}
+
             </MapProvider>
         </>
     )
