@@ -1,8 +1,12 @@
+import {transformExtent} from 'ol/proj';
+
 export const wgs84 = "EPSG:4326";
 export const wm = "EPSG:3857";
 
 export const myGeoServer = "https://geoserver.wildsong.biz/geoserver";
-export const workspace = "clatsop_wm";
+export const myArcGISServer = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services";
+
+export const workspace = "clatsop";
 export const astoria_ll = [-123.834,46.187];
 
 // Limits for Clatsop County
@@ -13,8 +17,9 @@ export const XMIN = -124.2
 export const YMIN =  45.75
 export const XMAX = -123.3
 export const YMAX =  46.3
-export const COUNTY_EXTENT=[]
 export const DEFAULT_CENTER = [ XMIN + (XMAX-XMIN)/2, YMIN + (YMAX-YMIN)/2 ]
+export const EXTENT_LL = [XMIN,YMIN, XMAX,YMAX]
+export const EXTENT_WM = transformExtent(EXTENT_LL, wgs84, wm);
 
 export const usngPrecision = [
 // dec   zoom

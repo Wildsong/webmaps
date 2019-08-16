@@ -1,8 +1,10 @@
 import React, {useState} from 'react'; // eslint-disable-line no-unused-vars
 import {control, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 
-// BaseMap in WMTS format
-const ccgisBasemap = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services/Clatsop_County_basemap/MapServer"
+import {myArcGISServer} from '../constants'
+
+// Clatsop County BaseMap
+const ccgisBasemap = myArcGISServer + "/Clatsop_County_basemap/MapServer/tile/{z}/{y}/{x}"
 
 // ESRI Clarity aerial
 const esriClarityUrl = 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/' +
@@ -43,7 +45,7 @@ const BaseMap = () => {
             */}
 
             <layer.Tile title="Clatsop County basemap"  baseLayer={true} opacity={.80}>
-                <source.TileArcGISRest url={ccgisBasemap}/>
+                <source.XYZ url={ccgisBasemap}/>
             </layer.Tile>
         </>
     );

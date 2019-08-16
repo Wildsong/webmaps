@@ -13,7 +13,7 @@ import Position from './position'
 import {toStringXY} from 'ol/coordinate'
 import {toLonLat} from 'ol/proj'
 
-import {myGeoServer, workspace, MAXRESOLUTION, COUNTY_EXTENT} from '../constants'
+import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION, EXTENT_WM} from '../constants'
 import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
 
 import Style from 'ol/style/Style'
@@ -28,12 +28,22 @@ const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
 const dogamiLandslideUrl = dogamiServer + "/Landslide_Susceptibility/ImageServer"
 const dogamiSlidoUrl = dogamiServer + "/SLIDO3_4/MapServer"
 
-// FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
-const ccPLSSUrl = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/services/plss/MapServer"
+// Clatsop County services
+const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
+
+// Web Markers
+const wfsSource = myGeoServer + "/ows?" + "service=WFS&version=2.0.0&request=GetFeature"
+const webMarkersUrl = wfsSource + '&typeNames=' + workspace + '%3Aweb_markers'
+const markerStyle = new Style({
+    image: new Circle({
+        radius: 40,
+        fill: new Fill({color: 'rgba(200,10,10, 0.5)'}),
+        stroke: new Stroke({color: 'red', width: 1})
+    })
+});
 
 // FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
 const FEMA_NFHL_arcgisREST = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
-const femaPLSSUrl = FEMA_NFHL_arcgisREST + '/5';
 
 const plssStyle = new Style({
     stroke: new Stroke({color: [0, 0, 0, 1], width:1}),
@@ -223,11 +233,11 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
             <Map>
                 <BaseMap/>
 
-                <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={COUNTY_EXTENT}>
+                <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
                     <source.ImageArcGISRest url={dogamiLandslideUrl}/>
                 </layer.Image>
 
-                <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={COUNTY_EXTENT}>
+                <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
                 <source.ImageArcGISRest url={dogamiSlidoUrl}/>
                 </layer.Image>
 
@@ -239,12 +249,8 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
                     </source.JSON>
                 </layer.Vector>
 
-                <layer.Vector title="Oregon Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={COUNTY_EXTENT}>
+                <layer.Vector title="Oregon Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM}>
                     <source.JSON url={zoningFeatureServer} loader="esrijson"/>
-                </layer.Vector>
-
-                <layer.Vector title="PLSS (FEMA)" style={plssStyle} reordering={false} maxResolution={MAXRESOLUTION}>
-                    <source.JSON url={femaPLSSUrl} loader="esrijson"/>
                 </layer.Vector>
 
                 <layer.Image title="PLSS (Clatsop County)" style={plssStyle} reordering={false}>
@@ -255,6 +261,10 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
                     <source.Vector features={gpxFeatures}>
                     <interaction.DragAndDrop fit={true}/>
                     </source.Vector>
+                </layer.Vector>
+
+                <layer.Vector title="Web markers" style={markerStyle}>
+                    <source.JSON url={webMarkersUrl} loader="geojson"/>
                 </layer.Vector>
 
                 {/*
