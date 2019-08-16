@@ -2,6 +2,7 @@ import React, {useState} from 'react'; // eslint-disable-line no-unused-vars
 import {control, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 
 import {myArcGISServer} from '../constants'
+import {EXTENT_WM} from '../constants'
 
 // Clatsop County BaseMap
 const ccgisBasemap = myArcGISServer + "/Clatsop_County_basemap/MapServer/tile/{z}/{y}/{x}"
@@ -19,11 +20,11 @@ const BaseMap = () => {
 
     return (
         <>
-            <layer.Image title="Bare Earth Hillshade" reordering={false}>
+            <layer.Image title="Bare Earth Hillshade" reordering={false}  extent={EXTENT_WM}>
                 <source.ImageWMS url={bareEarthHSUrl}/>
             </layer.Image>
 
-            <layer.Tile title="ESRI Clarity" baseLayer={true} reordering={false} visible={false}>
+            <layer.Tile title="ESRI Clarity" baseLayer={true} reordering={false} visible={false}  extent={EXTENT_WM}>
                 <source.XYZ url={esriClarityUrl}/>
             </layer.Tile>
 

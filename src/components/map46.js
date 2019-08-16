@@ -277,11 +277,11 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
                     </source.Vector>
                 </layer.Vector>
 
-                <layer.Vector title="Web markers" style={markerStyle}>
+                <layer.Vector title="Web markers" style={markerStyle} >
                     <source.JSON url={webMarkersUrl} loader="geojson"/>
                 </layer.Vector>
 
-                <layer.Vector title="Extent rectangle" opacity={1}>
+                <layer.Vector title="Extent rectangle" opacity={1} extent={EXTENT_WM}>
                     <source.Vector>
                         <Feature id="Rect1" style={yellowStyle}>
                             <geom.LineString transform={xform}>
