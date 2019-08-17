@@ -1,4 +1,5 @@
 export const actions = {
+    HOME:            'HOME',
     MAP:             'MAP',
 
     // Bookmarks

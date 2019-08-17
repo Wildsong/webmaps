@@ -19,15 +19,8 @@ const MainNavbar = ({ center, zoom }) => {
             <Collapse isOpen={collapse} navbar>
             <Nav className="ml-auto" navbar>
                 <NavItem>
-                    <NavLink to="/"><FontAwesomeIcon icon={ faHome } />Home</NavLink>
-                </NavItem>
-                <NavItem>
-                <NavLink to={{ type: actions.MAP, query: setMapQuery(center, zoom) }}
-                    activeClassName='active'
-                    activeStyle={{ color: 'pink' }}
-                    exact={true}
-                    strict={true}
-                ><FontAwesomeIcon icon={ faGlobe } /> Map</NavLink> &nbsp;
+                <NavLink to={{ type: actions.MAP, query: setMapQuery(center, zoom) }}>
+                    <FontAwesomeIcon icon={ faGlobe } /> Map</NavLink> &nbsp;
                 </NavItem>
                 <NavItem>
                     <NavLink to="/help"><FontAwesomeIcon icon={ faInfoCircle } />Help</NavLink>

@@ -22,15 +22,21 @@ import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
 import Collection from 'ol/Collection'
 import {click, platformModifierKeyOnly} from 'ol/events/condition'
 
-const gpxStyle = new Style({stroke: new Stroke({color: 'rgba(255, 0, 0, 1.0)', width:1.5})});
+const geocacheIcon = require('../../assets/traditional.png'); // eslint-disable-line no-undef
+const gpxStyle = new Style({
+    image: new Icon({src: geocacheIcon}),
+    stroke: new Stroke({color: "magenta", width: 4}),
+    fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
+});
+
+// Clatsop County services
+const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
+const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer/tile/{z}/{y}/{x}"
 
 // DOGAMI
 const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
 const dogamiLandslideUrl = dogamiServer + "/Landslide_Susceptibility/ImageServer"
 const dogamiSlidoUrl = dogamiServer + "/SLIDO3_4/MapServer"
-
-// Clatsop County services
-const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
 
 // Web Markers
 const wfsSource = myGeoServer + "/ows?" + "service=WFS&version=2.0.0&request=GetFeature"
@@ -270,6 +276,10 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
                 <layer.Image title="PLSS (Clatsop County)" style={plssStyle} reordering={false}>
                     <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
                 </layer.Image>
+
+                <layer.Tile title="Taxmap annotation" opacity={.80}>
+                    <source.XYZ url={ccTaxmapAnnoUrl}/>
+                </layer.Tile>
 
                 <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
                     <source.Vector features={gpxFeatures}>

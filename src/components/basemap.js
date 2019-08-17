@@ -5,7 +5,7 @@ import {myArcGISServer} from '../constants'
 import {EXTENT_WM} from '../constants'
 
 // Clatsop County BaseMap
-const ccgisBasemap = myArcGISServer + "/Clatsop_County_basemap/MapServer/tile/{z}/{y}/{x}"
+const ccBasemapUrl = myArcGISServer + "/Clatsop_County_basemap/MapServer/tile/{z}/{y}/{x}"
 
 // ESRI Clarity aerial
 const esriClarityUrl = 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/' +
@@ -46,7 +46,7 @@ const BaseMap = () => {
             */}
 
             <layer.Tile title="Clatsop County basemap"  baseLayer={true} opacity={.80}>
-                <source.XYZ url={ccgisBasemap}/>
+                <source.XYZ url={ccBasemapUrl}/>
             </layer.Tile>
         </>
     );
