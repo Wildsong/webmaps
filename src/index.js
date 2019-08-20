@@ -8,7 +8,6 @@ import App from './App'; // eslint-disable-line no-unused-vars
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../config/config.scss'
 import '../webmaps.scss'
-import './App.css'
 
 const { store, persistor } = configStore();
 

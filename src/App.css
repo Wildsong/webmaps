@@ -58,10 +58,6 @@ footer {
     margin: 10px;
 }
 
-.ol-react-map {
-    width: 800px;
-}
-
 .ol-full-screen .ol-rotate .ol-zoom-extent .ol-mouse-position {
     position: relative;
     top: 4px;
@@ -95,6 +91,7 @@ footer {
     border: 1px solid #cccccc;
     left: 48px;
 }
+
 .ol-mouse-position:after {
     border-top-color: white;
     border-width: 10px;
@@ -110,6 +107,7 @@ footer {
     right: 32px;
 }
 
+/* this was totally wrong, using defaults now
 .ol-overviewmap {
     position: relative;
     left: 4px;
@@ -117,6 +115,7 @@ footer {
     width: 155px;
     height: 155px;
 }
+*/
 
 .ol-scale-line {
     font-family: arial;

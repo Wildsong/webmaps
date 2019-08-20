@@ -5,6 +5,7 @@ import {setMapCenter} from '../actions'
 import {Container, Row, Col} from 'reactstrap'; // eslint-disable-line no-unused-vars
 import MapNavbar from './mapnavbar'; // eslint-disable-line no-unused-vars
 import Map46 from './map46'; // eslint-disable-line no-unused-vars
+import Geocoder from './geocoder'
 
 import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 import {MapProvider} from '@map46/ol-react/map-context'; // eslint-disable-line no-unused-vars
@@ -27,22 +28,20 @@ const MapPage = ({center, zoom, setMapCenter}) => {
 
     return (
         <>
-            <MapProvider map={theMap}>
-            <Map46 />
-            <control.LayerSwitcher extent={true} reordering={false} show_progress={true} collapsed={false} />
-{/*
-                <Container>
-                <Row>
-                    <Col>
-                    mapnavbar<MapNavbar />
-                    </Col>
-                    <Col>
-                    </Col>
-                </Row>
-            </Container>
-            */}
+        <MapProvider map={theMap}>
 
-            </MapProvider>
+            <Geocoder/><br />
+
+            <div className="mappage">
+                <div className="mapcolumn">
+                    <Map46/>
+                </div>
+                <div className="mapcolumn">
+                    <control.LayerSwitcher switcherClass="wm-switcher ol-layerswitcher" extent={true} reordering={false} show_progress={true} collapsed={false} />
+                </div>
+            </div>
+
+        </MapProvider>
         </>
     )
 }

@@ -7,7 +7,6 @@ import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
 import BootstrapTable from 'react-bootstrap-table-next' // eslint-disable-line no-unused-vars
 import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 import BaseMap from './basemap' // eslint-disable-line no-unused-vars
-import Geocoder from './geocoder'
 import Position from './position'
 
 import {toStringXY} from 'ol/coordinate'
@@ -248,8 +247,6 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
 
     return (
         <>
-            <Geocoder/><br />
-
             <Map>
                 <BaseMap/>
 
@@ -318,16 +315,16 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
 
                 <control.FullScreen/>
                 <control.ScaleLine units="us"/>
-                <control.OverviewMap layers={ovLayers}/>
+                <control.OverviewMap layers={ovLayers} target={null}/>
             </Map>
-
+{/*
             <Position coord={mousePosition} zoom={zoom} />
-
             <BootstrapTable bootstrap4 striped condensed
                 keyField={ taxlotKey }
                 columns={ taxlotColumns }
                 data={ rows }
             />
+*/}
         </>
     );
 }
