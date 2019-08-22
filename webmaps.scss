@@ -32,34 +32,38 @@ button {
 }
 
 /* ======================================================================== */
-
-/* turn off the opacity sliders */
-.layerswitcher-opacity {
-    display: none;
-}
-
-.mappage {
+.map-section {
     display: flex;
     flex-direction: row;
+    background-color: lightblue;
     flex-grow: 1;
-    width: 1024px;
-    height: 768px;
 }
-
-.mapcolumn {
-    border: 2px solid green;
-}
-
 .ore-map {
-    width: 1024px;
-    height: 768px;
+    padding: 2px;
+    flex-grow: 1;
     z-index:30;
+}
+.overview {
+    width: 195px;
+    height: 155px;
+    color: lightgreen;
+    background-image: url("/assets/babyturtle.png");
+    background-size: cover;
+}
+.table-section {
+    display: flex;
+    flex-direction: row;
 }
 
 .wm-switcher {
     position: relative !important;
     right: 0px !important;
     top: 0px !important;
+}
+
+/* turn off the opacity sliders */
+.layerswitcher-opacity {
+    display: none;
 }
 
 /* ======================================================================== */

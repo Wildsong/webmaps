@@ -1,10 +1,10 @@
-import { actions } from '../actions'
+import {actions} from '../actions'
 import Geohash from '@geonet/geohash'
-import { DEFAULT_CENTER,MINZOOM } from '../constants'
+import {DEFAULT_CENTER, DEFAULT_ZOOM, MINZOOM} from '../constants'
 
 const initialState = {
     center: DEFAULT_CENTER,
-    zoom: MINZOOM
+    zoom: DEFAULT_ZOOM
 }
 
 // Queries that I can understand include

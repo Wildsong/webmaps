@@ -103,22 +103,24 @@ const Geocoder = ({ setMapCenter }) => {
         ]);
     }
 
-    const handleChange = (e) => {
-        console.log('handleChange', e, e.value);
-        requestGeocode(e.value, addToTable);
+    const updateQuery = (e) => {
+        setQuery(e.target.value);
+        requestGeocode(query, addToTable);
     }
 
     return (
         <>
-            input: { query }
-                <Select
+            input: <input type="text" value={query} onChange={updateQuery}></input>
+{/*
+                    <Select
                     autoFocus
                     placeholder="search for something"
                     onInputChange={ handleQuery }
                     onChange={ handleChange }
                     options={ suggestions }
                 />
-                <BootstrapTable bootstrap4 condensed
+*/}
+                <BootstrapTable bootstrap4 striped condensed
                     keyField={ answersKey }
                     columns={ answersColumns }
                     data={ answers }

@@ -13,8 +13,7 @@ import {toStringXY} from 'ol/coordinate'
 import {toLonLat, fromLonLat} from 'ol/proj'
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
-import {astoria_ll, DEFAULT_CENTER, XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
-import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
+import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
 
 import Style from 'ol/style/Style'
 import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
@@ -28,9 +27,46 @@ const gpxStyle = new Style({
     fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
 });
 
-// Clatsop County services
-const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
-const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer/tile/{z}/{y}/{x}"
+/*
+const createTextStyle = (feature, resolution, dom) => {
+    var align = dom.align.value;
+    var baseline = dom.baseline.value;
+    var size = dom.size.value;
+    var offsetX = parseInt(dom.offsetX.value, 10);
+    var offsetY = parseInt(dom.offsetY.value, 10);
+    var weight = dom.weight.value;
+    var placement = dom.placement ? dom.placement.value : undefined;
+    var maxAngle = dom.maxangle ? parseFloat(dom.maxangle.value) : undefined;
+    var overflow = dom.overflow ? (dom.overflow.value == 'true') : undefined;
+    var rotation = parseFloat(dom.rotation.value);
+    if (dom.font.value == '\'Open Sans\'' && !openSansAdded) {
+        var openSans = document.createElement('link');
+        openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
+        openSans.rel = 'stylesheet';
+        document.getElementsByTagName('head')[0].appendChild(openSans);
+        openSansAdded = true;
+    }
+    var font = weight + ' ' + size + ' ' + dom.font.value;
+    var fillColor = dom.color.value;
+    var outlineColor = dom.outline.value;
+    var outlineWidth = parseInt(dom.outlineWidth.value, 10);
+
+    return new Text({
+        textAlign: align == '' ? undefined : align,
+        textBaseline: baseline,
+        font: font,
+        text: getText(feature, resolution, dom),
+        fill: new Fill({color: fillColor}),
+        stroke: new Stroke({color: outlineColor, width: outlineWidth}),
+        offsetX: offsetX,
+        offsetY: offsetY,
+        placement: placement,
+        maxAngle: maxAngle,
+        overflow: overflow,
+        rotation: rotation
+    });
+};
+*/
 
 // DOGAMI
 const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
@@ -48,7 +84,7 @@ const markerStyle = new Style({
     })
 });
 
-// extent rectangle
+// County extent rectangle
 const xform = (coordinates) => {
     for (let i = 0; i < coordinates.length; i+=2) {
         [coordinates[i], coordinates[i+1]] = fromLonLat([coordinates[i], coordinates[i+1]]);
@@ -65,15 +101,22 @@ const plssStyle = new Style({
 });
 
 const oregonAGOL = "https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services"
-const zoningFeatureServer = oregonAGOL + "/Oregon_Zoning_2017/FeatureServer/0";   // 2017
+//const zoningFeatureServer = oregonAGOL + "/Oregon_Zoning_2017/FeatureServer/0";   // 2017
 const zoningStyle = new Style({
     stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
     fill: new Fill({color: [76, 129, 205, .250]}),
 });
 
-const taxlotService = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services/Taxlots/FeatureServer"
-const taxlotLabels = taxlotService + "/0";
-const taxlotFeatures = taxlotService + "/1";
+// Clatsop County services
+const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
+const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
+const ccZoningLabelsUrl = myArcGISServer + "/Zoning/FeatureServer/0";
+const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/1";
+
+// Clatsop County ArcGIS Server
+const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
+const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
+const ccTaxlotFormat = 'esrijson'
 
 // Where the taxmap PDFs live
 const taxmapsBaseUrl = "http://maps.co.clatsop.or.us/applications/taxreports/taxmap"
@@ -109,7 +152,7 @@ const taxlotColumns = [
 ]
 const taxlotPopupField = 'MapTaxlot';
 
-/* WFS
+/* GeoServer WFS
  To generate this WFS service URL, go into GeoServer Layer Preview,
  and in All Formats, select "WFS GeoJSON(JSONP)" then paste here and
  clip off the outputFormat and maxFeatures attributes (maxFeatures=50&outputFormat=text%2Fjavascript
@@ -143,6 +186,7 @@ const yellowStyle = new Style({
 
 const Map46 = ({title, center, zoom, setMapCenter}) => {
     const [mousePosition, setMousePosition] = useState([0,0]);
+    const [showZoom, setShowZoom] = useState(zoom);
     const [popupPosition, setPopupPosition] = useState(); // where it will show up on screen
     const [popupText, setPopupText] = useState('HERE');   // text to display in popup
     const [selectCount, setSelectCount] = useState(0);
@@ -239,6 +283,7 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
         try {
             console.log("onMapMove", e, new_center)
             setMapCenter(new_center, new_zoom);
+            setShowZoom(new_zoom);
         } catch (err) {
             console.warn(err)
         }
@@ -247,84 +292,90 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
 
     return (
         <>
-            <Map>
-                <BaseMap/>
+        <Map onMoveEnd={onMapMove}>
+            <BaseMap/>
 
-                <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
-                    <source.ImageArcGISRest url={dogamiLandslideUrl}/>
-                </layer.Image>
+            <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
+                <source.ImageArcGISRest url={dogamiLandslideUrl}/>
+            </layer.Image>
 
-                <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
-                <source.ImageArcGISRest url={dogamiSlidoUrl}/>
-                </layer.Image>
+            <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
+            <source.ImageArcGISRest url={dogamiSlidoUrl}/>
+            </layer.Image>
 
-                {/* WFS */}
-                <layer.Vector title="Taxlots" style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
-                    <source.JSON url={taxlotUrl} loader={taxlotFormat}>
-                        <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
-                        <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                    </source.JSON>
-                </layer.Vector>
-
-                <layer.Vector title="Oregon Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM}>
-                    <source.JSON url={zoningFeatureServer} loader="esrijson"/>
-                </layer.Vector>
-
-                <layer.Image title="PLSS (Clatsop County)" style={plssStyle} reordering={false}>
-                    <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
-                </layer.Image>
-
-                <layer.Tile title="Taxmap annotation" opacity={.80}>
-                    <source.XYZ url={ccTaxmapAnnoUrl}/>
-                </layer.Tile>
-
-                <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
-                    <source.Vector features={gpxFeatures}>
-                    <interaction.DragAndDrop fit={true}/>
-                    </source.Vector>
-                </layer.Vector>
-
-                <layer.Vector title="Web markers" style={markerStyle} >
-                    <source.JSON url={webMarkersUrl} loader="geojson"/>
-                </layer.Vector>
-
-                <layer.Vector title="Extent rectangle" opacity={1} extent={EXTENT_WM}>
-                    <source.Vector>
-                        <Feature id="Rect1" style={yellowStyle}>
-                            <geom.LineString transform={xform}>
-                                { [[XMIN,YMIN],[XMIN,YMAX],[XMAX,YMAX],[XMAX,YMIN],[XMIN,YMIN]] }
-                            </geom.LineString>
-                        </Feature>
-                    </source.Vector>
-                </layer.Vector>
-
-                {/*
-                <layer.Vector name="Geolocation">
-                </layer.Vector>
-                <layer.Vector name="Taxlot Labels"
-                    source="esrijson"
-                    url={ taxlotFeatures }
-                    style={ taxlotTextStyle }
-                />
-                <Overlay id="popups"
-                    element={ popup }
-                    position={ popupPosition }
-                    positioning="center-center"
-                />
-                */}
-
-                <control.FullScreen/>
-                <control.ScaleLine units="us"/>
-                <control.OverviewMap layers={ovLayers} target={null}/>
-            </Map>
+            <layer.Vector title="WFS Taxlots" style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
+                <source.JSON url={taxlotUrl} loader={taxlotFormat}>
 {/*
-            <Position coord={mousePosition} zoom={zoom} />
-            <BootstrapTable bootstrap4 striped condensed
-                keyField={ taxlotKey }
-                columns={ taxlotColumns }
-                data={ rows }
+                        <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
+                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                    */}
+                </source.JSON>
+            </layer.Vector>
+
+            <layer.Vector title="Taxlots" style={taxlotStyle} reordering={false}>
+                <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
+                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
+                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                </source.JSON>
+            </layer.Vector>
+
+            <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                <source.JSON url={ccZoningUrl} loader="esrijson"/>
+            </layer.Vector>
+
+            <layer.Vector title="Zoning labels" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                <source.JSON url={ccZoningLabelsUrl} loader="esrijson"/>
+            </layer.Vector>
+
+            <layer.Image title="PLSS (Clatsop County)" style={plssStyle} reordering={false}>
+                <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
+            </layer.Image>
+
+            <layer.Tile title="Taxmap annotation (XYZ)" opacity={.80}>
+                <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
+            </layer.Tile>
+
+            <layer.Image title="Taxmap annotation" style={plssStyle} reordering={false}>
+                <source.ImageArcGISRest url={ccTaxmapAnnoUrl} loader="esrijson"/>
+            </layer.Image>
+
+            <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
+                <source.Vector features={gpxFeatures}>
+                <interaction.DragAndDrop fit={true}/>
+                </source.Vector>
+            </layer.Vector>
+
+            <layer.Vector title="Web markers" style={markerStyle} >
+                <source.JSON url={webMarkersUrl} loader="geojson"/>
+            </layer.Vector>
+
+            <layer.Vector title="Extent" opacity={1} extent={EXTENT_WM}>
+                <source.Vector>
+                    <Feature id="Rect1" style={yellowStyle}>
+                        <geom.LineString transform={xform}>
+                            { [[XMIN,YMIN],[XMIN,YMAX],[XMAX,YMAX],[XMAX,YMIN],[XMIN,YMIN]] }
+                        </geom.LineString>
+                    </Feature>
+                </source.Vector>
+            </layer.Vector>
+
+            {/*
+            <layer.Vector name="Geolocation">
+            </layer.Vector>
+            <layer.Vector name="Taxlot Labels"
+                source="esrijson"
+                url={ taxlotFeatures }
+                style={ taxlotTextStyle }
             />
-*/}
+            <Overlay id="popups"
+                element={ popup }
+                position={ popupPosition }
+                positioning="center-center"
+            />
+            */}
+
+            <control.ScaleLine units="us"/>
+        </Map>
         </>
     );
 }

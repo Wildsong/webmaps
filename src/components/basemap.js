@@ -14,18 +14,32 @@ const esriClarityUrl = 'https://clarity.maptiles.arcgis.com/arcgis/rest/services
 // DOGAMI "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
 const bareEarthHSUrl = "https://gis.dogami.oregon.gov/arcgis/services/Public/BareEarthHS/ImageServer/WMSServer?Layers=0"
 
+// OSIP = Oregon State Imagery Program
+const osipServer = "https://imagery.oregonexplorer.info/arcgis/rest/services"
+const osipImageryUrl = osipServer + '/OSIP_2018/OSIP_2018_WM/ImageServer/tile/{z}/{y}/{x}'
+const naipImageryUrl = osipServer + '/NAIP_2016/NAIP_2016_WM/ImageServer/tile/{z}/{y}/{x}'
+
 /* ========================================================================== */
+// extent={EXTENT_WM}
 
 const BaseMap = () => {
 
     return (
         <>
-            <layer.Image title="Bare Earth Hillshade" reordering={false}  extent={EXTENT_WM}>
+            <layer.Image title="Bare Earth Hillshade" reordering={false}>
                 <source.ImageWMS url={bareEarthHSUrl}/>
             </layer.Image>
 
-            <layer.Tile title="ESRI Clarity" baseLayer={true} reordering={false} visible={false}  extent={EXTENT_WM}>
+            <layer.Tile title="ESRI Clarity" baseLayer={true} reordering={false} visible={false}>
                 <source.XYZ url={esriClarityUrl}/>
+            </layer.Tile>
+
+            <layer.Tile title="NAIP 2016" baseLayer={true} reordering={false} visible={false}>
+                <source.XYZ url={naipImageryUrl}/>
+            </layer.Tile>
+
+            <layer.Tile title="Oregon 2018" baseLayer={true} reordering={false} visible={false}>
+                <source.XYZ url={osipImageryUrl}/>
             </layer.Tile>
 
             {/* Alternatives for streets: conventional or MVT */}
@@ -45,7 +59,7 @@ const BaseMap = () => {
             </layer.VectorTile>
             */}
 
-            <layer.Tile title="Clatsop County basemap"  baseLayer={true} opacity={.80}>
+            <layer.Tile title="Clatsop County"  baseLayer={true} opacity={.80}>
                 <source.XYZ url={ccBasemapUrl}/>
             </layer.Tile>
         </>
