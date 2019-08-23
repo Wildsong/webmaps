@@ -1,10 +1,10 @@
 import logger from 'redux-logger'
-import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
-import { persistStore, persistReducer } from 'redux-persist'
+import {createStore, applyMiddleware, combineReducers, compose} from 'redux'
+import {persistStore, persistReducer} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import routes from './routesMap'
-import { mapMiddleware, errorReporter } from './middleware'
-import { bookmarks, map, page } from './reducers'
+import {mapMiddleware, errorReporter} from './middleware'
+import {bookmarks, map, page, print} from './reducers'
 
 // This object defines where the storage takes place,
 // in this case, it's in local storage in your browser.
@@ -21,6 +21,7 @@ export default function configStore(preloadedState) {
             bookmarks,
             map,
             page,
+            print,
             location: reducer
         })
 //    )

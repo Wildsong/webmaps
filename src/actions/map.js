@@ -1,9 +1,9 @@
-import { actions } from './action-types'
-import { XMIN,YMIN, XMAX,YMAX, MINZOOM,MAXZOOM } from '../constants'
+import {MAP} from './action-types'
+import {XMIN,YMIN, XMAX,YMAX, MINZOOM,MAXZOOM} from '../constants'
 
 // center is an array of lon,lat numbers
 // zoom is a number
-export function setMapCenter(center, zoom) {
+export function setMapExtent(center, zoom) {
     if (zoom < MINZOOM || zoom > MAXZOOM) {
         throw("Zoom outside limits");
     }
@@ -12,7 +12,7 @@ export function setMapCenter(center, zoom) {
         throw("Center outside bounding box")
     }
     return {
-        type: actions.SETMAPCENTER,
+        type: MAP.SETEXTENT,
         payload: {
             center,
             zoom

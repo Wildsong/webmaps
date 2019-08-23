@@ -1,4 +1,4 @@
-import {actions} from '../actions'
+import {PAGE, MAP} from '../actions/action-types'
 import Geohash from '@geonet/geohash'
 import {DEFAULT_CENTER, DEFAULT_ZOOM, MINZOOM} from '../constants'
 
@@ -40,7 +40,7 @@ export function setMapQuery(lonlat, zoom) {
 export const map = (state=initialState, action={}) => {
     let newState;
     switch(action.type) {
-        case actions.MAP:
+        case PAGE.MAP:
             try {
                 console.log("map reducer: Loading state from query: ", action.meta.query);
                 newState = getMapQuery(action.meta.query)
@@ -50,7 +50,7 @@ export const map = (state=initialState, action={}) => {
             }
             break;
 
-        case actions.SETMAPCENTER:
+        case MAP.SETEXTENT:
             newState = action.payload
             break;
 

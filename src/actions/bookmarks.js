@@ -1,9 +1,9 @@
-import { actions } from './action-types'
+import {BOOKMARK} from './action-types'
 
 export function addBookmark({ location, zoom, title }) {
     console.log("actions.addBookmark", location, zoom, title);
     return {
-        type: actions.ADD_BOOKMARK,
+        type: BOOKMARK.ADD,
         payload: {
             location,
             zoom,
@@ -14,7 +14,7 @@ export function addBookmark({ location, zoom, title }) {
 export function deleteBookmark( id ) {
     console.log("actions.deleteBookmark", id);
     return {
-        type: actions.DELETE_BOOKMARK,
+        type: BOOKMARK.DELETE,
         payload: {
             id,
         },

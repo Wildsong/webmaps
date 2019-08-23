@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { PRINT } from '../actionTypes';
+import {PRINT} from './action-types';
 
 /* Action issued to start a print request.
  */

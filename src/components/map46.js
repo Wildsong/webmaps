@@ -1,7 +1,7 @@
 import React, {useState} from 'react'; // eslint-disable-line no-unused-vars
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
-import {setMapCenter} from '../actions'
+import {setMapExtent} from '../actions'
 import Select from 'react-select' // eslint-disable-line no-unused-vars
 import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
 import BootstrapTable from 'react-bootstrap-table-next' // eslint-disable-line no-unused-vars
@@ -184,7 +184,7 @@ const yellowStyle = new Style({
 
 /* ========================================================================== */
 
-const Map46 = ({title, center, zoom, setMapCenter}) => {
+const Map46 = ({title, center, zoom, setMapExtent}) => {
     const [mousePosition, setMousePosition] = useState([0,0]);
     const [showZoom, setShowZoom] = useState(zoom);
     const [popupPosition, setPopupPosition] = useState(); // where it will show up on screen
@@ -282,7 +282,7 @@ const Map46 = ({title, center, zoom, setMapCenter}) => {
         const new_zoom = v.getZoom();
         try {
             console.log("onMapMove", e, new_center)
-            setMapCenter(new_center, new_zoom);
+            setMapExtent(new_center, new_zoom);
             setShowZoom(new_zoom);
         } catch (err) {
             console.warn(err)
@@ -383,7 +383,7 @@ Map46.propTypes = {
     title: PropTypes.string,
     center: PropTypes.arrayOf(PropTypes.number),
     zoom: PropTypes.number,
-    setMapCenter: PropTypes.func
+    setMapExtent: PropTypes.func
 }
 const mapStateToProps = (state) => ({
     bookmarks: state.bookmarks,
@@ -391,6 +391,6 @@ const mapStateToProps = (state) => ({
     zoom: state.map.zoom,
 });
 const mapDispatchToProps = {
-    setMapCenter
+    setMapExtent
 };
 export default connect(mapStateToProps, mapDispatchToProps)(Map46);

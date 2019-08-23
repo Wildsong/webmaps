@@ -1,5 +1,5 @@
-import { actions } from '../actions'
-import { router, setMapQuery } from '../reducers'
+import {MAP} from '../actions/action-types'
+import {setMapQuery} from '../reducers'
 
 export const mapMiddleware = store => {
     return next => action => {
@@ -7,7 +7,7 @@ export const mapMiddleware = store => {
             const state = store.getState()
             //console.log("mapMiddleware action=",action, " state=",state);
             switch (action.type) {
-                case actions.SETMAPCENTER:
+                case MAP.SETEXTENT:
                     // Calling "page" reducer will cause the URL address to update (and push to history).
                     store.dispatch({type:"MAP",
                         payload: {

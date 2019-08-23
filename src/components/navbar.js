@@ -1,7 +1,7 @@
 import React, {useState} from 'react'; // eslint-disable-line no-unused-vars
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
-import {actions} from '../actions'
+import {PAGE} from '../actions/action-types'
 import {setMapQuery} from '../reducers'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'; // eslint-disable-line no-unused-vars
 // Font gallery: https://fontawesome.com/icons?d=gallery&s=solid
@@ -19,7 +19,7 @@ const MainNavbar = ({ center, zoom }) => {
             <Collapse isOpen={collapse} navbar>
             <Nav className="ml-auto" navbar>
               <NavItem>
-                <NavLink to={{ type: actions.MAP, query: setMapQuery(center, zoom) }}>
+                <NavLink to={{ type: PAGE.MAP, query: setMapQuery(center, zoom) }}>
                     <FontAwesomeIcon icon={faGlobe}/>Map</NavLink>
                 </NavItem>
                 <NavItem>

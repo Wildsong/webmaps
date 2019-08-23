@@ -22,8 +22,7 @@
  * SOFTWARE.
  */
 
-import { PRINT } from '../actionTypes';
-
+import {PRINT} from '../actions/action-types'
 
 const default_state = {
     state: 'printed',

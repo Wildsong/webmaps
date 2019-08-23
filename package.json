@@ -37,6 +37,11 @@
     "connected-react-router": "^6.5.2",
     "deepmerge": "^4.0.0",
     "dotenv": "^8.1.0",
+    "html2canvas": "^1.0.0-rc.3",
+    "jspdf": "^1.5.3",
+    "markup": "0.0.4",
+    "modali": "^1.2.0",
+    "moment": "^2.24.0",
     "ol": "file:../openlayers-6.0.0-beta.13/build/ol",
     "ol-ext": "^3.1.5",
     "ole-brian32768": "^1.0.2",
@@ -54,7 +59,8 @@
     "redux-first-router-link": "^2.1.1",
     "redux-logger": "^3.0.6",
     "redux-persist": "^5.10.0",
-    "usng.js": "^0.4.2"
+    "usng.js": "^0.4.2",
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",

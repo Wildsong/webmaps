@@ -1,13 +1,12 @@
 import { NOT_FOUND } from 'redux-first-router'
 
 const components = {
-    HOME:  'Map',  // this effectively is a redirect for now, not really what I want though
-
-    MAP:   'Map',
-    HELP:  'Help',
-    FAQ:   'Faq',
-    NEWS:  'News',
-    ABOUT: 'About',
+    HOME:   'Map',  // FIXME: effectively a redirect, works but not really what I want
+    MAP:    'Map',
+    HELP:   'Help',
+    FAQ:    'Faq',
+    NEWS:   'News',
+    ABOUT:  'About',
     [NOT_FOUND]: 'NotFound'
 }
 

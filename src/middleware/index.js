@@ -1,2 +1,2 @@
-export { errorReporter } from './error'
-export { mapMiddleware } from './map'
+export {errorReporter} from './error'
+export {mapMiddleware} from './map'

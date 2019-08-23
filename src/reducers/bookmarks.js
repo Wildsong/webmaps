@@ -1,4 +1,4 @@
-import { actions } from '../actions'
+import {BOOKMARK} from '../actions/action-types'
 
 const initialState = {
     bookmarks: {
@@ -15,10 +15,13 @@ const initialState = {
 
 export const bookmarks = (state=initialState, action) => {
     switch(action.type)  {
-	case actions.ADD_BOOKMARK:
-        return {
-            bookmarks: state.bookmarks.concat(action.payload)
-        };
+        case BOOKMARK.ADD:
+            return {
+                bookmarks: state.bookmarks.concat(action.payload)
+            };
+        case BOOKMARK.DELETE:
+            console.error("Action not implemented yet!")
+            break;
     }
     return state;
 }
