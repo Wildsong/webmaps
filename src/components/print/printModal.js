@@ -9,7 +9,7 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import moment from 'moment'
 
-//import Mark from 'markup'
+import Mark from 'markup'
 //import PrintImage from './printImage';
 
 import PrintPreviewImage from './printPreviewImage';
@@ -86,7 +86,8 @@ const PrintButton = () => {
             'bst': 'NONE'
         }
 */
-console.log("element = ", element);
+        console.log("element = ", element);
+
         html2canvas(document.querySelector(".ol-viewport")).then((canvas) => {
             //document.body.appendChild(canvas) // this attaches the image at the bottom of the window
             const data = canvas.toDataURL('image/png');
@@ -94,7 +95,7 @@ console.log("element = ", element);
             doc.addImage(data, 'PNG', element.x, element.y, element.width, element.height);
         // This is a hack to make sure the image download completes before the doc gets written.
         // I'd rather put it elsewhere
-            doc.save('ccwebmaps_' + template + '_' + timestamp() + '.pdf');
+            doc.save('ccwebmaps_' + timestamp() + '.pdf');
         });
     }
 
@@ -205,7 +206,7 @@ console.log("element = ", element);
                     addText(doc, element);
                     break;
                 case 'map':
-                    addMapImage(doc, element);
+                    //addMapImage(doc, element);
                     break;
                 case 'image':
                     addImage(doc, element);
@@ -219,6 +220,8 @@ console.log("element = ", element);
             }
         }
 
+        // We need to wait for addMapImage to complete first!
+        doc.save('ccwebmaps_' + timestamp() + '.pdf');
     }
 
     const printMap = (e) => {

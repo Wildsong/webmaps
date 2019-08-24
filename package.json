@@ -39,7 +39,7 @@
     "dotenv": "^8.1.0",
     "html2canvas": "^1.0.0-rc.3",
     "jspdf": "^1.5.3",
-    "markup": "0.0.4",
+    "markup-js": "^1.5.21",
     "modali": "^1.2.0",
     "moment": "^2.24.0",
     "ol": "file:../openlayers-6.0.0-beta.13/build/ol",
