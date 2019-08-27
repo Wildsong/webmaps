@@ -9,7 +9,13 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import moment from 'moment'
 
-import Mark from 'markup'
+import Mark from 'markup-js'
+
+import shortid from 'shortid'
+for (let i=0; i<10; i++) {
+    console.log("shortid test", shortid.generate());
+}
+
 //import PrintImage from './printImage';
 
 import PrintPreviewImage from './printPreviewImage';
@@ -38,7 +44,7 @@ const PrintButton = () => {
     const [title, setTitle] = useState("Clatsop County");
     const [layout, setLayout] = useState(layouts[0]);
     const [resolution, setResolution] = useState("1");
-//    const [description, setDescription] = useState(""); // FIXME make Markdown work!
+//    const [description, setDescription] = useState("");
 
     const titleChanged = (e) => {
         setTitle(e.target.value);
@@ -49,7 +55,7 @@ const PrintButton = () => {
 //    }
 
     const addText = (doc, element) => {
-        // these are the subsitution strings for the map text elements
+        // dictionary for the map text mark up
         const date = new Date();
         const subst_dict = {
             title,
@@ -75,7 +81,7 @@ const PrintButton = () => {
         doc.setTextColor(full_def.color[0], full_def.color[1], full_def.color[2]);
         doc.setFont(full_def.font, full_def.fontStyle);
 
-        doc.text(full_def.x, full_def.y, full_def.text); // Mark.up(full_def.text, subst_dict));
+        doc.text(full_def.x, full_def.y, Mark.up(full_def.text, subst_dict));
     }
 
     const addMapImage = (doc, element) => {

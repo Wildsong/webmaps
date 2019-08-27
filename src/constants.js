@@ -1,7 +1,7 @@
 import {transformExtent} from 'ol/proj';
 
-export const wgs84 = "EPSG:4326";
-export const wm = "EPSG:3857";
+export const WGS84 = "EPSG:4326";
+export const WM = "EPSG:3857";
 
 export const myGeoServer = "https://geoserver.wildsong.biz/geoserver";
 export const myArcGISServer = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services";
@@ -20,7 +20,7 @@ export const YMAX =  46.3
 export const DEFAULT_CENTER = [ XMIN + (XMAX-XMIN)/2, YMIN + (YMAX-YMIN)/2 ]
 export const DEFAULT_ZOOM = 10
 export const EXTENT_LL = [XMIN,YMIN, XMAX,YMAX]
-export const EXTENT_WM = transformExtent(EXTENT_LL, wgs84, wm);
+export const EXTENT_WM = transformExtent(EXTENT_LL, WGS84, WM);
 
 export const usngPrecision = [
 // dec   zoom

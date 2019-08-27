@@ -13,7 +13,7 @@ import {toStringXY} from 'ol/coordinate'
 import {toLonLat, fromLonLat} from 'ol/proj'
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
-import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
+import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM, WGS84} from '../constants'
 
 import Style from 'ol/style/Style'
 import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
@@ -108,12 +108,14 @@ const zoningStyle = new Style({
 });
 
 // Clatsop County services
+// map services
 const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
 const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
+
+// feature services
+const ccMilepostsUrl = myArcGISServer + "/highway_mileposts/FeatureServer/0";
 const ccZoningLabelsUrl = myArcGISServer + "/Zoning/FeatureServer/0";
 const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/1";
-
-// Clatsop County ArcGIS Server
 const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
 const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
 const ccTaxlotFormat = 'esrijson'
@@ -181,11 +183,20 @@ const yellowStyle = new Style({
     stroke: new Stroke({color: 'yellow', width: 1})
 });
 
+// FIXME this should be an SVG diamond shape
+const milepostStyle = new Style({
+    image: new Circle({
+        radius: 300,
+        fill: new Fill({color: 'yellow'}),
+        stroke: new Stroke({color: 'yellow', width: 1})
+    })
+});
+
+
 
 /* ========================================================================== */
 
 const Map46 = ({title, center, zoom, setMapExtent}) => {
-    const [mousePosition, setMousePosition] = useState([0,0]);
     const [showZoom, setShowZoom] = useState(zoom);
     const [popupPosition, setPopupPosition] = useState(); // where it will show up on screen
     const [popupText, setPopupText] = useState('HERE');   // text to display in popup
@@ -194,11 +205,9 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
 
     const gpxFeatures = new Collection();
 
-    const showMousePosition = (e) => {
-        const lonlat = toLonLat(e.coordinate)
-        setMousePosition(lonlat)
-        return false;
-    }
+    const coordFormatter = (coord) => {
+		return toStringXY(coord, 4);
+	}
 
     // Returns true if the event should trigger a taxlot selection
     const myCondition = (e) => {
@@ -327,7 +336,15 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
                 <source.JSON url={ccZoningLabelsUrl} loader="esrijson"/>
             </layer.Vector>
 
-            <layer.Image title="PLSS (Clatsop County)" style={plssStyle} reordering={false}>
+            <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                <source.JSON url={ccZoningUrl} loader="esrijson"/>
+            </layer.Vector>
+
+            <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM}>
+                <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
+            </layer.Vector>
+
+            <layer.Image title="PLSS (Clatsop County)" reordering={false}>
                 <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
             </layer.Image>
 
@@ -335,7 +352,7 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
                 <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
             </layer.Tile>
 
-            <layer.Image title="Taxmap annotation" style={plssStyle} reordering={false}>
+            <layer.Image title="Taxmap annotation" reordering={false}>
                 <source.ImageArcGISRest url={ccTaxmapAnnoUrl} loader="esrijson"/>
             </layer.Image>
 
@@ -374,6 +391,7 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             />
             */}
 
+            <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
             <control.ScaleLine units="us"/>
         </Map>
         </>
