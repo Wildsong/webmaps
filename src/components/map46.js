@@ -106,6 +106,9 @@ const zoningStyle = new Style({
     stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
     fill: new Fill({color: [76, 129, 205, .250]}),
 });
+const zoningLabelsStyle = new Style({
+    text: new Text({color: [0, 0, 0, 1], width:.75}),
+});
 
 // Clatsop County services
 // map services
@@ -186,7 +189,7 @@ const yellowStyle = new Style({
 // FIXME this should be an SVG diamond shape
 const milepostStyle = new Style({
     image: new Circle({
-        radius: 300,
+        radius: 3,
         fill: new Fill({color: 'yellow'}),
         stroke: new Stroke({color: 'yellow', width: 1})
     })
@@ -312,16 +315,16 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             <source.ImageArcGISRest url={dogamiSlidoUrl}/>
             </layer.Image>
 
+            {/*
             <layer.Vector title="WFS Taxlots" style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={taxlotUrl} loader={taxlotFormat}>
-{/*
                         <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
                     <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                    */}
                 </source.JSON>
             </layer.Vector>
+            */}
 
-            <layer.Vector title="Taxlots" style={taxlotStyle} reordering={false}>
+            <layer.Vector title="Taxlots" style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
                     <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
                     <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
@@ -329,18 +332,14 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             </layer.Vector>
 
             <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-                <source.JSON url={ccZoningUrl} loader="esrijson"/>
+            <source.JSON url={ccZoningUrl} loader="esrijson"/>
             </layer.Vector>
 
-            <layer.Vector title="Zoning labels" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+            <layer.Vector title="Zoning labels" style={zoningLabelsStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
                 <source.JSON url={ccZoningLabelsUrl} loader="esrijson"/>
             </layer.Vector>
 
-            <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-                <source.JSON url={ccZoningUrl} loader="esrijson"/>
-            </layer.Vector>
-
-            <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM}>
+            <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
             </layer.Vector>
 
