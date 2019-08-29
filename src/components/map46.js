@@ -29,27 +29,7 @@ const gpxStyle = new Style({
     fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
 });
 
-const getText = (feature, resolution, params) => {
-    let text = feature.get(taxlotLabelField);
-    const type = params.text;
-    const maxResolution = params.maxreso;
-
-    if (resolution > maxResolution) {
-        text = '';
-    } else if (type == 'hide') {
-        text = '';
-/*
-    } else if (type == 'shorten') {
-        text = text.trunc(12);
-    }
-     else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
-        text = stringDivider(text, 16, '\n');
-*/
-    }
-    return text;
-};
-
-const createTextStyle = (feature, resolution, params) => {
+const createTextStyle = (feature, resolution, params, getText) => {
     var align = params.align;
     var baseline = params.baseline;
     var offsetX = parseInt(params.offsetX, 10);
@@ -119,16 +99,6 @@ const plssStyle = new Style({
     //fill: new Fill({color: [255, 0, 0, .250]}),
 });
 
-const oregonAGOL = "https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services"
-//const zoningFeatureServer = oregonAGOL + "/Oregon_Zoning_2017/FeatureServer/0";   // 2017
-const zoningStyle = new Style({
-    stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
-    fill: new Fill({color: [76, 129, 205, .250]}),
-});
-const zoningLabelsStyle = new Style({
-    text: new Text({color: [0, 0, 0, 1], width:.75}),
-});
-
 // Clatsop County services
 // map services
 const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
@@ -137,10 +107,12 @@ const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
 // feature services
 const ccMilepostsUrl = myArcGISServer + "/highway_mileposts/FeatureServer/0";
 
-const ccZoningLabelsUrl = myArcGISServer + "/Zoning/FeatureServer/0";
-const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/1";
+const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/0";
+const ccZoningAstoriaUrl = myArcGISServer + "/Zoning/FeatureServer/1";
+const ccZoningCannonBeachUrl = myArcGISServer + "/Zoning/FeatureServer/2";
+const ccZoningWarrentonUrl = myArcGISServer + "/Zoning/FeatureServer/3";
 
-const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
+//const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
 const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
 const ccTaxlotFormat = 'esrijson'
 
@@ -187,6 +159,7 @@ const taxlotUrl = myGeoServer + '/ows?service=WFS&version=1.0.0&request=GetFeatu
     + '&typeName=' + workspace + '%3Ataxlots'
 const taxlotFormat = 'geojson'
 */
+
 const taxlotsLabelParams = {
     text: "normal",
     weight: "bold", // italic small-caps bold
@@ -206,16 +179,87 @@ const taxlotsLabelParams = {
     outlineWidth: 1
 }
 
-const taxlotStyle = new Style({
-    fill: new Fill({color:"rgba(128,0,0,0.1)"}),
-    stroke: new Stroke({color:"rgba(0,0,0,1.0)", width:1}),
-})
+const getTaxlotLabel = (feature, resolution, params) => {
+    let text = feature.get(taxlotLabelField);
+    const type = params.text;
+    const maxResolution = params.maxreso;
+
+    if (resolution > maxResolution) {
+        text = '';
+    } else if (type == 'hide') {
+        text = '';
+/*
+    } else if (type == 'shorten') {
+        text = text.trunc(12);
+    }
+     else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
+        text = stringDivider(text, 16, '\n');
+*/
+    }
+    return text;
+};
+
+//const taxlotStyle = new Style({
+//    fill: new Fill({color:"rgba(128,0,0,0.1)"}),
+//    stroke: new Stroke({color:"rgba(0,0,0,1.0)", width:1}),
+//})
 const taxlotTextStyle = (feature, resolution) => {
     return new Style({
-        text: createTextStyle(feature, resolution, taxlotsLabelParams),
-        //text: new Text({color: [0, 0, 0, 1], width:.75}),
+        fill: new Fill({color:"rgba(128,0,0,0.1)"}),
+        stroke: new Stroke({color:"rgba(0,0,0,1.0)", width:1}),
+        text: createTextStyle(feature, resolution, taxlotsLabelParams, getTaxlotLabel)
     });
 }
+
+const zoningLabelField = "Zone";
+
+const zoningLabelParams = {
+    text: "normal",
+    weight: "bold", // italic small-caps bold
+    size: "12px",  // see CSS3 -- can use 'em' or 'px' as unit
+    font: "verdana", // sans-serif cursive serif
+    maxreso: 4800,
+    placement: "point", // point or line
+    align: "center", // left, right, center, end, start
+    baseline: "middle", // bottom top middle alphabetic hanging ideographic
+    rotation: 0,
+    maxangle: 0,
+    overflow: true,
+    offsetX: 0,
+    offsetY: 0,
+    color: "black",
+    outline: "white", // TODO turn on only with aerial?
+    outlineWidth: 1
+}
+
+const getZoningLabel = (feature, resolution, params) => {
+    let text = feature.get(zoningLabelField);
+    const type = params.text;
+    const maxResolution = params.maxreso;
+
+    if (resolution > maxResolution) {
+        text = '';
+    } else if (type == 'hide') {
+        text = '';
+/*
+    } else if (type == 'shorten') {
+        text = text.trunc(12);
+    }
+     else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
+        text = stringDivider(text, 16, '\n');
+*/
+    }
+    return text;
+};
+
+// TODO: use Ole here to stylize this layer using the ESRI styles.
+const zoningStyle = (feature, resolution) => {
+    return new Style({
+        stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
+        fill: new Fill({color: [76, 129, 205, .250]}),
+        text: createTextStyle(feature, resolution, zoningLabelParams, getZoningLabel)
+    });
+};
 
 // yellow outline, clear center lets you see what you have selected!
 const selectedStyle = new Style({ // yellow
@@ -368,32 +412,31 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             <source.ImageArcGISRest url={dogamiSlidoUrl}/>
             </layer.Image>
 
-            {/*
-            <layer.Vector title="WFS Taxlots" style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
-                <source.JSON url={taxlotUrl} loader={taxlotFormat}>
-                        <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
-                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                </source.JSON>
-            </layer.Vector>
-            */}
-
-            <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
+            <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
                     <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
                     <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
                 </source.JSON>
             </layer.Vector>
-
+{/*
             <layer.Vector title="Taxlot labels" style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccTaxlotLabelsUrl} loader={ccTaxlotFormat} />
             </layer.Vector>
-
-            <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-            <source.JSON url={ccZoningUrl} loader="esrijson"/>
+*/}
+            <layer.Vector title="Zoning, Warrenton" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                <source.JSON url={ccZoningWarrentonUrl} loader="esrijson"/>
             </layer.Vector>
 
-            <layer.Vector title="Zoning labels" style={zoningLabelsStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-                <source.JSON url={ccZoningLabelsUrl} loader="esrijson"/>
+            <layer.Vector title="Zoning, Cannon Beach" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                <source.JSON url={ccZoningCannonBeachUrl} loader="esrijson"/>
+            </layer.Vector>
+
+            <layer.Vector title="Zoning, Astoria" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                <source.JSON url={ccZoningAstoriaUrl} loader="esrijson"/>
+            </layer.Vector>
+
+            <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                <source.JSON url={ccZoningUrl} loader="esrijson"/>
             </layer.Vector>
 
             <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
