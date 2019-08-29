@@ -1,11 +1,13 @@
-import React, {useState} from 'react'; // eslint-disable-line no-unused-vars
+import React, {useState, useEffect, useContext, useRef} from 'react'; // eslint-disable-line no-unused-vars
 import PropTypes from 'prop-types'
+import {MapContext} from '@map46/ol-react/map-context'
 import {connect} from 'react-redux'
 import {setMapExtent} from '../actions'
 import Select from 'react-select' // eslint-disable-line no-unused-vars
 import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
 import BootstrapTable from 'react-bootstrap-table-next' // eslint-disable-line no-unused-vars
 import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
+import Popup from 'ol-ext/overlay/Popup'
 import BaseMap from './basemap' // eslint-disable-line no-unused-vars
 import Position from './position'
 
@@ -27,35 +29,52 @@ const gpxStyle = new Style({
     fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
 });
 
+const getText = (feature, resolution, params) => {
+    let text = feature.get(taxlotLabelField);
+    const type = params.text;
+    const maxResolution = params.maxreso;
+
+    if (resolution > maxResolution) {
+        text = '';
+    } else if (type == 'hide') {
+        text = '';
 /*
-const createTextStyle = (feature, resolution, dom) => {
-    var align = dom.align.value;
-    var baseline = dom.baseline.value;
-    var size = dom.size.value;
-    var offsetX = parseInt(dom.offsetX.value, 10);
-    var offsetY = parseInt(dom.offsetY.value, 10);
-    var weight = dom.weight.value;
-    var placement = dom.placement ? dom.placement.value : undefined;
-    var maxAngle = dom.maxangle ? parseFloat(dom.maxangle.value) : undefined;
-    var overflow = dom.overflow ? (dom.overflow.value == 'true') : undefined;
-    var rotation = parseFloat(dom.rotation.value);
-    if (dom.font.value == '\'Open Sans\'' && !openSansAdded) {
+    } else if (type == 'shorten') {
+        text = text.trunc(12);
+    }
+     else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
+        text = stringDivider(text, 16, '\n');
+*/
+    }
+    return text;
+};
+
+const createTextStyle = (feature, resolution, params) => {
+    var align = params.align;
+    var baseline = params.baseline;
+    var offsetX = parseInt(params.offsetX, 10);
+    var offsetY = parseInt(params.offsetY, 10);
+    var placement = params.placement ? params.placement : undefined;
+    var maxAngle = params.maxangle ? parseFloat(params.maxangle) : undefined;
+    var overflow = params.overflow ? (params.overflow == 'true') : undefined;
+    var rotation = parseFloat(params.rotation);
+/*
+    if (params.font == '\'Open Sans\'' && !openSansAdded) {
         var openSans = document.createElement('link');
         openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
         openSans.rel = 'stylesheet';
         document.getElementsByTagName('head')[0].appendChild(openSans);
         openSansAdded = true;
     }
-    var font = weight + ' ' + size + ' ' + dom.font.value;
-    var fillColor = dom.color.value;
-    var outlineColor = dom.outline.value;
-    var outlineWidth = parseInt(dom.outlineWidth.value, 10);
-
+*/
+    var fillColor = params.color;
+    var outlineColor = params.outline;
+    var outlineWidth = parseInt(params.outlineWidth, 10);
     return new Text({
         textAlign: align == '' ? undefined : align,
         textBaseline: baseline,
-        font: font,
-        text: getText(feature, resolution, dom),
+        font: params.weight + ' ' + params.size + ' ' + params.font,
+        text: getText(feature, resolution, params),
         fill: new Fill({color: fillColor}),
         stroke: new Stroke({color: outlineColor, width: outlineWidth}),
         offsetX: offsetX,
@@ -63,10 +82,10 @@ const createTextStyle = (feature, resolution, dom) => {
         placement: placement,
         maxAngle: maxAngle,
         overflow: overflow,
-        rotation: rotation
+        rotation: rotation,
+        scale: 1
     });
 };
-*/
 
 // DOGAMI
 const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
@@ -117,42 +136,45 @@ const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
 
 // feature services
 const ccMilepostsUrl = myArcGISServer + "/highway_mileposts/FeatureServer/0";
+
 const ccZoningLabelsUrl = myArcGISServer + "/Zoning/FeatureServer/0";
 const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/1";
+
 const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
 const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
 const ccTaxlotFormat = 'esrijson'
 
 // Where the taxmap PDFs live
-const taxmapsBaseUrl = "http://maps.co.clatsop.or.us/applications/taxreports/taxmap"
+const ccTaxmapsPDFUrl = "http://maps.co.clatsop.or.us/applications/taxreports/taxmap/"
+const ccPropertyInfoUrl = "https://apps.co.clatsop.or.us/property/property_details/?a="
 
-const taxlotKey      = 'taxlotkey';
-const taxlotColumns = [
-// These fields are in the "accounts" database built by KH
-    {dataField: taxlotKey,  text: 'Taxlot Key'},
-    {dataField: 'account_id', text: 'Account'},
-    {dataField: 'taxlot',     text: 'Taxlot'},
-    {dataField: 'owner_line', text: 'Owner'},
-    {dataField: 'situs_addr', text: 'Situs Address'},
-    /*
-    {dataField: 'MapTaxlot',    text: 'MapTaxlot',
+const taxlotsKey       = 'TAXLOTKEY';
+const taxlotLabelField = 'Taxlot';
+const taxlotsColumns = [
+// These fields are in the "taxlots_accounts" table built by KH
+    {dataField: taxlotsKey,  text: 'Taxlot Key'},
+    {dataField: 'ACCOUNT_ID', text: 'Account',
         formatter: (value, record) => {
-             //console.log('formatter MapTaxLot=', value, ' obj=',record);
-             const propertyInfo = 'https://apps.co.clatsop.or.us/property/property_details/?t=' + value
-             return (
-                 <a target="pinfo" href={ propertyInfo }>{ value }</a>
-             );
+            return (
+                <a target="pinfo" href={ccPropertyInfoUrl + value}>{value}</a>
+            );
     }},
-    */
+    {dataField: 'Taxlot',     text: 'Taxlot'},
+    {dataField: 'OWNER_LINE', text: 'Owner'},
+    {dataField: 'SITUS_ADDR', text: 'Situs Address'},
+    {dataField: 'MAPNUM', text: 'Map Number',
+        formatter: (value, record) => {
+            return (
+                <a target="taxmap" href={ccTaxmapsPDFUrl + 'tp' + value + '.pdf'}>{value}</a>
+            );
+    }},
 
-/* I think these fields correspond to the Official data
+/* Available in the table but not currently in the service
     {dataField: 'Town',      text: 'Township'},
     {dataField: 'Range',     text: 'Range'},
     {dataField: 'SecNumber', text: 'Section'},
     {dataField: 'Qtr',       text: 'Qtr'},
     {dataField: 'QtrQtr',    text: 'QtrQtr'},
-    {dataField: 'Taxlot',    text: 'Taxlot'},
-    {dataField: 'MapNumber', text: 'Map Number'},
 */
 ]
 const taxlotPopupField = 'MapTaxlot';
@@ -161,21 +183,40 @@ const taxlotPopupField = 'MapTaxlot';
  To generate this WFS service URL, go into GeoServer Layer Preview,
  and in All Formats, select "WFS GeoJSON(JSONP)" then paste here and
  clip off the outputFormat and maxFeatures attributes (maxFeatures=50&outputFormat=text%2Fjavascript
-*/
 const taxlotUrl = myGeoServer + '/ows?service=WFS&version=1.0.0&request=GetFeature'
     + '&typeName=' + workspace + '%3Ataxlots'
 const taxlotFormat = 'geojson'
-
-/* VECTOR TILES
-const taxlotLayer = 'clatsop_wm%3Ataxlots'
-const taxlotUrl = myGeoServer + '/gwc/service/tms/1.0.0/'
-        + taxlotLayer
-        + '@EPSG%3A900913@pbf/{z}/{x}/{-y}.pbf';
 */
+const taxlotsLabelParams = {
+    text: "normal",
+    weight: "bold", // italic small-caps bold
+    size: "12px",  // see CSS3 -- can use 'em' or 'px' as unit
+    font: "verdana", // sans-serif cursive serif
+    maxreso: 4800,
+    align: "left",
+    baseline: "middle",
+    rotation: 0,
+    placement: "polygon",
+    maxangle: 0,
+    overflow: true,
+    offsetX: 0,
+    offsetY: 0,
+    color: "black",
+    outline: "white", // TODO turn on only with aerial?
+    outlineWidth: 1
+}
+
 const taxlotStyle = new Style({
     fill: new Fill({color:"rgba(128,0,0,0.1)"}),
     stroke: new Stroke({color:"rgba(0,0,0,1.0)", width:1}),
 })
+const taxlotTextStyle = (feature, resolution) => {
+    return new Style({
+        text: createTextStyle(feature, resolution, taxlotsLabelParams),
+        //text: new Text({color: [0, 0, 0, 1], width:.75}),
+    });
+}
+
 // yellow outline, clear center lets you see what you have selected!
 const selectedStyle = new Style({ // yellow
     stroke: new Stroke({color: 'rgba(255, 255, 0, 1.0)', width:2}),
@@ -195,16 +236,32 @@ const milepostStyle = new Style({
     })
 });
 
-
+const TAXLOT_LAYER_TITLE = "Taxlots"
 
 /* ========================================================================== */
 
 const Map46 = ({title, center, zoom, setMapExtent}) => {
+    const map = useContext(MapContext);
     const [showZoom, setShowZoom] = useState(zoom);
-    const [popupPosition, setPopupPosition] = useState(); // where it will show up on screen
-    const [popupText, setPopupText] = useState('HERE');   // text to display in popup
     const [selectCount, setSelectCount] = useState(0);
     const [rows, setRows] = useState([]);
+    const [popup] = useState(new Popup());
+    /*
+    const [popupPosition, setPopupPosition] = useState([0,0]) // location on screen
+    const [popupText, setPopupText] = useState("HERE") // text for popup
+    */
+    // Find the taxlot layer so we can query it for popups.
+    const layers = map.getLayers();
+    const taxlotLayerRef = useRef(null);
+    useEffect(() => {
+        map.addOverlay(popup);
+        layers.forEach(layer => {
+            if (layer.get("title") == TAXLOT_LAYER_TITLE)
+                taxlotLayerRef.current = layer;
+        })
+        console.log("taxlotLayerRef = ", taxlotLayerRef)
+    }, []);
+
 
     const gpxFeatures = new Collection();
 
@@ -216,30 +273,33 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
     const myCondition = (e) => {
         switch(e.type) {
             case 'click':
-                console.log('CLICK!');
                 return true;
+
             case 'pointerdown':
             case 'pointerup':
             case 'singleclick':
             case 'wheel':
             case 'pointerdrag':
-                console.log('condition:', e.type);
+//                console.log('condition:', e.type);
                 return false;
 
             case 'pointermove':
-/*
                 // roll over - just show taxlot popup
-                const lonlat = toLonLat(e.coordinate)
-                const features = taxlotLayer.getSource().getFeaturesAtCoordinate(e.coordinate)
-                if (features.length > 0) {
-                    const text = features[0].get(taxlotPopupField)
-                    if (text != null && text.length > 0) {
-                        popup.show(e.coordinate, text);
-                        return false;
+                // FIXME I don't know why it's not seeing any features
+                // works with Geoserver, I think. ArcGIS related??
+                // Naa... already converted to data by this time.
+                {
+                    const lonlat = toLonLat(e.coordinate)
+                    const features = taxlotLayerRef.current.getSource().getFeaturesAtCoordinate(lonlat)
+                    if (features.length > 0) {
+                        const text = features[0].get(taxlotPopupField)
+                        if (text != null && text.length > 0) {
+                            popup.show(e.coordinate, text);
+                            return false;
+                        }
                     }
                 }
                 popup.hide();
-*/
                 return false; // don't do a selection!
 
     //            case 'platformModifierKeyOnly':
@@ -255,7 +315,7 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             features.forEach( (feature) => {
                 const attributes = {};
                 // Copy the data from each feature into a list
-                taxlotColumns.forEach ( (column) => {
+                taxlotsColumns.forEach ( (column) => {
                     attributes[column.dataField] = feature.get(column.dataField);
                 });
                 rows.push(attributes)
@@ -266,24 +326,17 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
 
     const selectedFeatures = new Collection();
     const onSelectEvent = (e) => {
-        console.log("onSelectEvent", e)
         const s = selectedFeatures.getLength();
         setSelectCount(s);
-/*
         if (s) {
-            popup.show(e.mapBrowserEvent.coordinate, selectedFeatures.item(0).get("taxlot").trim());
+            const item = selectedFeatures.item(0);
+            popup.show(e.mapBrowserEvent.coordinate, item.get(taxlotsKey).trim());
         } else {
             popup.hide()
         }
-*/
         copyFeaturesToTable(selectedFeatures)
-        e.stopPropagation(); // this stops draw interaction
+        e.stopPropagation();
     }
-
-    const popup = React.createElement('div',
-        { className:"ol-popup" },
-        popupText
-    );
 
     // If you don't catch this event and then you click on the map,
     // the click handler will cause the map to pan back to its starting point
@@ -324,11 +377,15 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             </layer.Vector>
             */}
 
-            <layer.Vector title="Taxlots" style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
+            <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
                     <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
                     <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
                 </source.JSON>
+            </layer.Vector>
+
+            <layer.Vector title="Taxlot labels" style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
+                <source.JSON url={ccTaxlotLabelsUrl} loader={ccTaxlotFormat} />
             </layer.Vector>
 
             <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
@@ -347,13 +404,9 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
                 <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
             </layer.Image>
 
-            <layer.Tile title="Taxmap annotation (XYZ)" opacity={.80}>
+            <layer.Tile title="Taxmap annotation" opacity={.80}>
                 <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
             </layer.Tile>
-
-            <layer.Image title="Taxmap annotation" reordering={false}>
-                <source.ImageArcGISRest url={ccTaxmapAnnoUrl} loader="esrijson"/>
-            </layer.Image>
 
             <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
                 <source.Vector features={gpxFeatures}>
@@ -378,11 +431,6 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             {/*
             <layer.Vector name="Geolocation">
             </layer.Vector>
-            <layer.Vector name="Taxlot Labels"
-                source="esrijson"
-                url={ taxlotFeatures }
-                style={ taxlotTextStyle }
-            />
             <Overlay id="popups"
                 element={ popup }
                 position={ popupPosition }
@@ -393,6 +441,10 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
             <control.ScaleLine units="us"/>
         </Map>
+
+        <BootstrapTable bootstrap4 striped condensed
+            keyField={taxlotsKey} columns={taxlotsColumns} data={rows}/>
+
         </>
     );
 }
