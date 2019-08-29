@@ -83,7 +83,7 @@ const createTextStyle = (feature, resolution, params) => {
         maxAngle: maxAngle,
         overflow: overflow,
         rotation: rotation,
-        scale: 1
+        scale: 1 // TODO this should change with zoom
     });
 };
 
@@ -193,10 +193,10 @@ const taxlotsLabelParams = {
     size: "12px",  // see CSS3 -- can use 'em' or 'px' as unit
     font: "verdana", // sans-serif cursive serif
     maxreso: 4800,
-    align: "left",
-    baseline: "middle",
+    placement: "point", // point or line
+    align: "center", // left, right, center, end, start
+    baseline: "middle", // bottom top middle alphabetic hanging ideographic
     rotation: 0,
-    placement: "polygon",
     maxangle: 0,
     overflow: true,
     offsetX: 0,
