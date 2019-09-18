@@ -94,10 +94,12 @@ const xform = (coordinates) => {
 // FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
 const FEMA_NFHL_arcgisREST = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
 
+/*
 const plssStyle = new Style({
     stroke: new Stroke({color: [0, 0, 0, 1], width:1}),
     //fill: new Fill({color: [255, 0, 0, .250]}),
 });
+*/
 
 // Clatsop County services
 // map services
@@ -113,7 +115,7 @@ const ccZoningCannonBeachUrl = myArcGISServer + "/Zoning/FeatureServer/2";
 const ccZoningWarrentonUrl = myArcGISServer + "/Zoning/FeatureServer/3";
 
 //const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
-const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
+const ccTaxlotUrl = myArcGISServer + '/Taxlot_2/FeatureServer/1'
 const ccTaxlotFormat = 'esrijson'
 
 // Where the taxmap PDFs live
@@ -215,8 +217,8 @@ const zoningLabelField = "Zone";
 
 const zoningLabelParams = {
     text: "normal",
-    weight: "bold", // italic small-caps bold
-    size: "12px",  // see CSS3 -- can use 'em' or 'px' as unit
+    weight: "", // italic small-caps bold
+    size: "18px",  // see CSS3 -- can use 'em' or 'px' as unit
     font: "verdana", // sans-serif cursive serif
     maxreso: 4800,
     placement: "point", // point or line
@@ -227,9 +229,9 @@ const zoningLabelParams = {
     overflow: true,
     offsetX: 0,
     offsetY: 0,
-    color: "black",
-    outline: "white", // TODO turn on only with aerial?
-    outlineWidth: 1
+    color: "white",
+    outline: "black", // TODO turn on only with aerial?
+    outlineWidth: 3
 }
 
 const getZoningLabel = (feature, resolution, params) => {
@@ -412,17 +414,6 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             <source.ImageArcGISRest url={dogamiSlidoUrl}/>
             </layer.Image>
 
-            <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
-                <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
-                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
-                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                </source.JSON>
-            </layer.Vector>
-{/*
-            <layer.Vector title="Taxlot labels" style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
-                <source.JSON url={ccTaxlotLabelsUrl} loader={ccTaxlotFormat} />
-            </layer.Vector>
-*/}
             <layer.Vector title="Zoning, Warrenton" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
                 <source.JSON url={ccZoningWarrentonUrl} loader="esrijson"/>
             </layer.Vector>
@@ -439,17 +430,33 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
                 <source.JSON url={ccZoningUrl} loader="esrijson"/>
             </layer.Vector>
 
+            <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
+                <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
+                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
+                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                </source.JSON>
+            </layer.Vector>
+
             <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
             </layer.Vector>
 
-            <layer.Image title="PLSS (Clatsop County)" reordering={false}>
-                <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
-            </layer.Image>
+            {/*
+            <layer.VectorTile title="Taxlots" declutter={true} crossOrigin="anonymous" style={taxlotStyle}>
+                <source.VectorTile url={taxlotUrl}>
+                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={click} selected={onSelectEvent}/>
+                    <interaction.SelectDragBox condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                </source.VectorTile>
+            </layer.VectorTile>
 
             <layer.Tile title="Taxmap annotation" opacity={.80}>
                 <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
             </layer.Tile>
+            */}
+
+            <layer.Image title="PLSS (Clatsop County)" reordering={false}>
+            <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
+            </layer.Image>
 
             <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
                 <source.Vector features={gpxFeatures}>

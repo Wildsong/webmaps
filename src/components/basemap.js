@@ -26,10 +26,10 @@ const BaseMap = () => {
 
     return (
         <>
-            <layer.Image title="Bare Earth Hillshade" reordering={false}>
+            <layer.Image title="Bare Earth Hillshade" reordering={false} displayInLayerSwitcher={false}>
                 <source.ImageWMS url={bareEarthHSUrl}/>
             </layer.Image>
-
+{/*
             <layer.Tile title="ESRI Clarity" baseLayer={true} reordering={false} visible={false}>
                 <source.XYZ url={esriClarityUrl}/>
             </layer.Tile>
@@ -37,8 +37,8 @@ const BaseMap = () => {
             <layer.Tile title="NAIP 2016" baseLayer={true} reordering={false} visible={false}>
                 <source.XYZ url={naipImageryUrl}/>
             </layer.Tile>
-
-            <layer.Tile title="Oregon 2018" baseLayer={true} reordering={false} visible={false}>
+*/}
+            <layer.Tile title="Aerial, Oregon 2018" baseLayer={true} reordering={false} visible={false}>
                 <source.XYZ url={osipImageryUrl}/>
             </layer.Tile>
 
@@ -49,13 +49,6 @@ const BaseMap = () => {
             {/* MVT
             <layer.VectorTile title="Mapbox Streets" baseLayer={true} visible={true} style={mapboxStyle} declutter={true}>
                 <source.VectorTile url={mapboxStreetsUrl}/>
-            </layer.VectorTile>
-
-            <layer.VectorTile title="Taxlots" declutter={true} crossOrigin="anonymous" style={taxlotStyle}>
-                <source.VectorTile url={taxlotUrl}>
-                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={click} selected={onSelectEvent}/>
-                    <interaction.SelectDragBox condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                </source.VectorTile>
             </layer.VectorTile>
             */}
 

@@ -5,7 +5,7 @@
   "author": "Brian H Wilson",
   "scripts": {
     "lint": "eslint .",
-    "build": "parcel build index.html --no-minify",
+    "build": "parcel build index.html --public-url /maps",
     "start": "parcel serve index.html"
   },
   "repository": {
@@ -40,7 +40,7 @@
     "markup-js": "^1.5.21",
     "modali": "^1.2.0",
     "moment": "^2.24.0",
-    "ol": "file:../openlayers-6.0.0-beta.13/build/ol",
+    "ol": "file:../openlayers-6.0.0-beta.15/build/ol",
     "ol-ext": "^3.1.5",
     "pbf": "^3.2.0",
     "pixelworks": "^1.1.0",
