@@ -4,7 +4,7 @@ export const WGS84 = "EPSG:4326";
 export const WM = "EPSG:3857";
 
 export const myGeoServer = "https://geoserver.wildsong.biz/geoserver";
-export const myArcGISServer = "https://cc-gis.clatsop.co.clatsop.or.us/arcgis/rest/services";
+export const myArcGISServer = "https://delta.co.clatsop.or.us/server/rest/services";
 
 export const workspace = "clatsop";
 export const astoria_ll = [-123.834,46.187];

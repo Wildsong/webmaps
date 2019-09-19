@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useContext, useRef} from 'react'; // eslint-disable-line no-unused-vars
 import PropTypes from 'prop-types'
 import {MapContext} from '@map46/ol-react/map-context'
+import {CollectionProvider} from '@map46/ol-react/collection-context' // eslint-disable-line no-unused-vars
 import {connect} from 'react-redux'
 import {setMapExtent} from '../actions'
 import Select from 'react-select' // eslint-disable-line no-unused-vars
@@ -11,15 +12,15 @@ import Popup from 'ol-ext/overlay/Popup'
 import BaseMap from './basemap' // eslint-disable-line no-unused-vars
 import Position from './position'
 
-import {toStringXY} from 'ol/coordinate'
-import {toLonLat, fromLonLat} from 'ol/proj'
-
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
 import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM, WGS84} from '../constants'
 
+import LayerGroup from 'ol/layer/Group'
+import Collection from 'ol/Collection'
+import {toStringXY} from 'ol/coordinate'
+import {toLonLat, fromLonLat} from 'ol/proj'
 import Style from 'ol/style/Style'
 import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
-import Collection from 'ol/Collection'
 import {click, platformModifierKeyOnly} from 'ol/events/condition'
 
 const geocacheIcon = require('../../assets/traditional.png'); // eslint-disable-line no-undef
@@ -107,7 +108,7 @@ const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
 const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
 
 // feature services
-const ccMilepostsUrl = myArcGISServer + "/highway_mileposts/FeatureServer/0";
+const ccMilepostsUrl = myArcGISServer + "/Highway_Mileposts/FeatureServer/0";
 
 const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/0";
 const ccZoningAstoriaUrl = myArcGISServer + "/Zoning/FeatureServer/1";
@@ -297,11 +298,21 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
     const [popupText, setPopupText] = useState("HERE") // text for popup
     */
     // Find the taxlot layer so we can query it for popups.
-    const layers = map.getLayers();
+
+    const [basemapLayers] = useState(new Collection());
+    const [hazardsLayers] = useState(new Collection());
+    const [zoningLayers] = useState(new Collection());
+    const [mapLayers] = useState(new Collection([
+        new LayerGroup({title: "Base", layers:basemapLayers}),
+        new LayerGroup({title: "Hazards", layers:hazardsLayers}),
+        new LayerGroup({title: "Zoning", layers:zoningLayers}),
+    ]));
+
     const taxlotLayerRef = useRef(null);
     useEffect(() => {
         map.addOverlay(popup);
-        layers.forEach(layer => {
+        mapLayers.forEach(layer => {
+            map.addLayer(layer);
             if (layer.get("title") == TAXLOT_LAYER_TITLE)
                 taxlotLayerRef.current = layer;
         })
@@ -404,89 +415,97 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
     return (
         <>
         <Map onMoveEnd={onMapMove}>
-            <BaseMap/>
+            <CollectionProvider collection={basemapLayers}>
+                <BaseMap layerCollection={basemapLayers}/>
+            </CollectionProvider>
 
-            <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
-                <source.ImageArcGISRest url={dogamiLandslideUrl}/>
-            </layer.Image>
+            <CollectionProvider collection={hazardsLayers}>
+                <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
+                    <source.ImageArcGISRest url={dogamiLandslideUrl}/>
+                </layer.Image>
 
-            <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
-            <source.ImageArcGISRest url={dogamiSlidoUrl}/>
-            </layer.Image>
+                <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
+                <source.ImageArcGISRest url={dogamiSlidoUrl}/>
+                </layer.Image>
+            </CollectionProvider>
 
-            <layer.Vector title="Zoning, Warrenton" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-                <source.JSON url={ccZoningWarrentonUrl} loader="esrijson"/>
-            </layer.Vector>
+            <CollectionProvider collection={zoningLayers}>
+                <layer.Vector title="Zoning, Warrenton" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                    <source.JSON url={ccZoningWarrentonUrl} loader="esrijson"/>
+                </layer.Vector>
 
-            <layer.Vector title="Zoning, Cannon Beach" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-                <source.JSON url={ccZoningCannonBeachUrl} loader="esrijson"/>
-            </layer.Vector>
+                <layer.Vector title="Zoning, Cannon Beach" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                    <source.JSON url={ccZoningCannonBeachUrl} loader="esrijson"/>
+                </layer.Vector>
 
-            <layer.Vector title="Zoning, Astoria" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-                <source.JSON url={ccZoningAstoriaUrl} loader="esrijson"/>
-            </layer.Vector>
+                <layer.Vector title="Zoning, Astoria" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                    <source.JSON url={ccZoningAstoriaUrl} loader="esrijson"/>
+                </layer.Vector>
 
-            <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
-                <source.JSON url={ccZoningUrl} loader="esrijson"/>
-            </layer.Vector>
+                <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                    <source.JSON url={ccZoningUrl} loader="esrijson"/>
+                </layer.Vector>
+            </CollectionProvider>
 
-            <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
-                <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
-                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
-                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                </source.JSON>
-            </layer.Vector>
+            <CollectionProvider collection={mapLayers}>
+                <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
+                    <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
+                        <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
+                        <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                    </source.JSON>
+                </layer.Vector>
 
-            <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
-                <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
-            </layer.Vector>
+                <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
+                    <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
+                </layer.Vector>
 
-            {/*
-            <layer.VectorTile title="Taxlots" declutter={true} crossOrigin="anonymous" style={taxlotStyle}>
-                <source.VectorTile url={taxlotUrl}>
-                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={click} selected={onSelectEvent}/>
-                    <interaction.SelectDragBox condition={platformModifierKeyOnly} selected={onSelectEvent}/>
-                </source.VectorTile>
-            </layer.VectorTile>
+                {/*
+                <layer.VectorTile title="Taxlots" declutter={true} crossOrigin="anonymous" style={taxlotStyle}>
+                    <source.VectorTile url={taxlotUrl}>
+                        <interaction.Select features={selectedFeatures} style={selectedStyle} condition={click} selected={onSelectEvent}/>
+                        <interaction.SelectDragBox condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                    </source.VectorTile>
+                </layer.VectorTile>
 
-            <layer.Tile title="Taxmap annotation" opacity={.80}>
-                <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
-            </layer.Tile>
-            */}
+                <layer.Tile title="Taxmap annotation" opacity={.80}>
+                    <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
+                </layer.Tile>
+                */}
 
-            <layer.Image title="PLSS (Clatsop County)" reordering={false}>
-            <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
-            </layer.Image>
+                <layer.Image title="PLSS (Clatsop County)" reordering={false}>
+                <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
+                </layer.Image>
 
-            <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
-                <source.Vector features={gpxFeatures}>
-                <interaction.DragAndDrop fit={true}/>
-                </source.Vector>
-            </layer.Vector>
+                <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
+                    <source.Vector features={gpxFeatures}>
+                    <interaction.DragAndDrop fit={true}/>
+                    </source.Vector>
+                </layer.Vector>
 
-            <layer.Vector title="Web markers" style={markerStyle} >
-                <source.JSON url={webMarkersUrl} loader="geojson"/>
-            </layer.Vector>
+                <layer.Vector title="Web markers" style={markerStyle} >
+                    <source.JSON url={webMarkersUrl} loader="geojson"/>
+                </layer.Vector>
 
-            <layer.Vector title="Extent" opacity={1} extent={EXTENT_WM}>
-                <source.Vector>
-                    <Feature id="Rect1" style={yellowStyle}>
-                        <geom.LineString transform={xform}>
-                            { [[XMIN,YMIN],[XMIN,YMAX],[XMAX,YMAX],[XMAX,YMIN],[XMIN,YMIN]] }
-                        </geom.LineString>
-                    </Feature>
-                </source.Vector>
-            </layer.Vector>
+                <layer.Vector title="Extent" opacity={1} extent={EXTENT_WM}>
+                    <source.Vector>
+                        <Feature id="Rect1" style={yellowStyle}>
+                            <geom.LineString transform={xform}>
+                                { [[XMIN,YMIN],[XMIN,YMAX],[XMAX,YMAX],[XMAX,YMIN],[XMIN,YMIN]] }
+                            </geom.LineString>
+                        </Feature>
+                    </source.Vector>
+                </layer.Vector>
 
-            {/*
-            <layer.Vector name="Geolocation">
-            </layer.Vector>
-            <Overlay id="popups"
-                element={ popup }
-                position={ popupPosition }
-                positioning="center-center"
-            />
-            */}
+                {/*
+                <layer.Vector name="Geolocation">
+                </layer.Vector>
+                <Overlay id="popups"
+                    element={ popup }
+                    position={ popupPosition }
+                    positioning="center-center"
+                />
+                */}
+            </CollectionProvider>
 
             <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
             <control.ScaleLine units="us"/>
@@ -494,7 +513,6 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
 
         <BootstrapTable bootstrap4 striped condensed
             keyField={taxlotsKey} columns={taxlotsColumns} data={rows}/>
-
         </>
     );
 }

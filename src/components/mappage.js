@@ -10,8 +10,9 @@ import PrintButton from './print/printModal'  // eslint-disable-line no-unused-v
 
 import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 import {MapProvider} from '@map46/ol-react/map-context'; // eslint-disable-line no-unused-vars
+import {CollectionProvider} from '@map46/ol-react/collection-context' // eslint-disable-line no-unused-vars
 
-import {Map as olMap, View as olView} from 'ol'
+import {Map as olMap, View as olView, Collection} from 'ol'
 import {fromLonLat} from 'ol/proj'
 import {defaults as defaultInteractions} from 'ol/interaction'
 import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
