@@ -510,9 +510,10 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
             <control.ScaleLine units="us"/>
         </Map>
-
+{/*
         <BootstrapTable bootstrap4 striped condensed
             keyField={taxlotsKey} columns={taxlotsColumns} data={rows}/>
+            */}
         </>
     );
 }

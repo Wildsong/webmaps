@@ -11,13 +11,13 @@ import { fromLonLat } from 'ol/proj'
 const nominatim = "https://nominatim.openstreetmap.org/search?format=json"
 
 const locationiqKey = process.env.LOCATIONIQ_KEY;
-if (typeof locationiqKey === 'undefined') console.error("LOCATIONIQ_KEY is undefined.");
+if (locationiqKey == undefined) console.error("LOCATIONIQ_KEY is undefined.");
 const locationiq = "https://us1.locationiq.com/v1/search.php?format=json&key=" + locationiqKey
 
 // https://opencagedata.com/api
 // NOTE NOTE Opencage results are not in the standard nominatim format
 const opencageKey = process.env.OPENCAGE_KEY;
-if (typeof opencageKey === 'undefined') console.error("OPENCAGE_KEY is undefined.");
+if (opencageKey === undefined) console.error("OPENCAGE_KEY is undefined.");
 const opencage = "https://api.opencagedata.com/geocode/v1/json?key=" + opencageKey
     + '&proximity=[46,-123]'
     + '&pretty=1'

@@ -19,20 +19,20 @@ const MainNavbar = ({ center, zoom }) => {
             <Collapse isOpen={collapse} navbar>
             <Nav className="ml-auto" navbar>
               <NavItem>
-                <NavLink to={{ type: PAGE.MAP, query: setMapQuery(center, zoom) }}>
+                <NavLink to={{ type: PAGE.MAP, payload:{}, query: setMapQuery(center, zoom) }}>
                     <FontAwesomeIcon icon={faGlobe}/>Map</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink to="/help"><FontAwesomeIcon icon={faQuestionCircle}/>Help</NavLink>
+                    <NavLink to={{ type: PAGE.HELP, payload:{} }}><FontAwesomeIcon icon={faQuestionCircle}/>Help</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink to="/faq"><FontAwesomeIcon icon={faInfoCircle}/>FAQ</NavLink>
+                    <NavLink to={{ type: PAGE.FAQ }}><FontAwesomeIcon icon={faInfoCircle}/>FAQ</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink to="/news"><FontAwesomeIcon icon={faNewspaper}/>News</NavLink>
+                    <NavLink to={{ type: PAGE.NEWS }}><FontAwesomeIcon icon={faNewspaper}/>News</NavLink>
                 </NavItem>
                 <NavItem>
-                    <a id="map46logo" href="/about"></a>
+                    <a id="map46logo" href="/maps/about"></a>
               </NavItem>
             </Nav>
             </Collapse>
