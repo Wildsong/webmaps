@@ -5,8 +5,9 @@ import {CollectionProvider} from '@map46/ol-react/collection-context' // eslint-
 import {connect} from 'react-redux'
 import {setMapExtent} from '../actions'
 import Select from 'react-select' // eslint-disable-line no-unused-vars
+
 import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
-import BootstrapTable from 'react-bootstrap-table-next' // eslint-disable-line no-unused-vars
+
 import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 import Popup from 'ol-ext/overlay/Popup'
 import BaseMap from './basemap' // eslint-disable-line no-unused-vars
@@ -116,92 +117,129 @@ const ccZoningCannonBeachUrl = myArcGISServer + "/Zoning/FeatureServer/2";
 const ccZoningWarrentonUrl = myArcGISServer + "/Zoning/FeatureServer/3";
 
 //const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
-const ccTaxlotUrl = myArcGISServer + '/Taxlot_2/FeatureServer/1'
+const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
 const ccTaxlotFormat = 'esrijson'
 
 // Where the taxmap PDFs live
 const ccTaxmapsPDFUrl = "http://maps.co.clatsop.or.us/applications/taxreports/taxmap/"
 const ccPropertyInfoUrl = "https://apps.co.clatsop.or.us/property/property_details/?a="
 
-const taxlotsKey       = 'TAXLOTKEY';
-const taxlotLabelField = 'Taxlot';
-const taxlotsColumns = [
-// These fields are in the "taxlots_accounts" table built by KH
-    {dataField: taxlotsKey,  text: 'Taxlot Key'},
-    {dataField: 'ACCOUNT_ID', text: 'Account',
-        formatter: (value, record) => {
-            return (
-                <a target="pinfo" href={ccPropertyInfoUrl + value}>{value}</a>
-            );
-    }},
-    {dataField: 'Taxlot',     text: 'Taxlot'},
-    {dataField: 'OWNER_LINE', text: 'Owner'},
-    {dataField: 'SITUS_ADDR', text: 'Situs Address'},
-    {dataField: 'MAPNUM', text: 'Map Number',
-        formatter: (value, record) => {
-            return (
-                <a target="taxmap" href={ccTaxmapsPDFUrl + 'tp' + value + '.pdf'}>{value}</a>
-            );
-    }},
-
-/* Available in the table but not currently in the service
-    {dataField: 'Town',      text: 'Township'},
-    {dataField: 'Range',     text: 'Range'},
-    {dataField: 'SecNumber', text: 'Section'},
-    {dataField: 'Qtr',       text: 'Qtr'},
-    {dataField: 'QtrQtr',    text: 'QtrQtr'},
-*/
-]
-const taxlotPopupField = 'MapTaxlot';
-
 /* GeoServer WFS
- To generate this WFS service URL, go into GeoServer Layer Preview,
- and in All Formats, select "WFS GeoJSON(JSONP)" then paste here and
- clip off the outputFormat and maxFeatures attributes (maxFeatures=50&outputFormat=text%2Fjavascript
-const taxlotUrl = myGeoServer + '/ows?service=WFS&version=1.0.0&request=GetFeature'
+To generate this WFS service URL, go into GeoServer Layer Preview,
+and in All Formats, select "WFS GeoJSON(JSONP)" then paste here and
+clip off the outputFormat and maxFeatures attributes (maxFeatures=50&outputFormat=text%2Fjavascript
+    const taxlotUrl = myGeoServer + '/ows?service=WFS&version=1.0.0&request=GetFeature'
     + '&typeName=' + workspace + '%3Ataxlots'
-const taxlotFormat = 'geojson'
-*/
+    const taxlotFormat = 'geojson'
+    */
 
-const taxlotsLabelParams = {
-    text: "normal",
-    weight: "bold", // italic small-caps bold
-    size: "12px",  // see CSS3 -- can use 'em' or 'px' as unit
-    font: "verdana", // sans-serif cursive serif
-    maxreso: 4800,
-    placement: "point", // point or line
-    align: "center", // left, right, center, end, start
-    baseline: "middle", // bottom top middle alphabetic hanging ideographic
-    rotation: 0,
-    maxangle: 0,
-    overflow: true,
-    offsetX: 0,
-    offsetY: 0,
-    color: "black",
-    outline: "white", // TODO turn on only with aerial?
-    outlineWidth: 1
-}
-
-const getTaxlotLabel = (feature, resolution, params) => {
-    let text = feature.get(taxlotLabelField);
-    const type = params.text;
-    const maxResolution = params.maxreso;
-
-    if (resolution > maxResolution) {
-        text = '';
-    } else if (type == 'hide') {
-        text = '';
-/*
-    } else if (type == 'shorten') {
-        text = text.trunc(12);
+    const taxlotLabelParams = {
+        text: "normal",
+        weight: "bold", // italic small-caps bold
+        size: "12px",  // see CSS3 -- can use 'em' or 'px' as unit
+        font: "verdana", // sans-serif cursive serif
+        maxreso: 4800,
+        placement: "point", // point or line
+        align: "center", // left, right, center, end, start
+        baseline: "middle", // bottom top middle alphabetic hanging ideographic
+        rotation: 0,
+        maxangle: 0,
+        overflow: true,
+        offsetX: 0,
+        offsetY: 0,
+        color: "black",
+        outline: "white", // TODO turn on only with aerial?
+        outlineWidth: 1
     }
-     else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
-        text = stringDivider(text, 16, '\n');
-*/
-    }
-    return text;
-};
 
+    const getTaxlotLabel = (feature, resolution, params) => {
+        let text = feature.get(taxlotLabelField);
+        const type = params.text;
+        const maxResolution = params.maxreso;
+
+        if (resolution > maxResolution) {
+            text = '';
+        } else if (type == 'hide') {
+            text = '';
+            /*
+        } else if (type == 'shorten') {
+            text = text.trunc(12);
+        }
+        else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
+            text = stringDivider(text, 16, '\n');
+            */
+        }
+        return text;
+    };
+
+    const zoningLabelField = "Zone";
+
+    const zoningLabelParams = {
+        text: "normal",
+        weight: "", // italic small-caps bold
+        size: "18px",  // see CSS3 -- can use 'em' or 'px' as unit
+        font: "verdana", // sans-serif cursive serif
+        maxreso: 4800,
+        placement: "point", // point or line
+        align: "center", // left, right, center, end, start
+        baseline: "middle", // bottom top middle alphabetic hanging ideographic
+        rotation: 0,
+        maxangle: 0,
+        overflow: true,
+        offsetX: 0,
+        offsetY: 0,
+        color: "white",
+        outline: "black", // TODO turn on only with aerial?
+        outlineWidth: 3
+    }
+
+    const getZoningLabel = (feature, resolution, params) => {
+        let text = feature.get(zoningLabelField);
+        const type = params.text;
+        const maxResolution = params.maxreso;
+
+        if (resolution > maxResolution) {
+            text = '';
+        } else if (type == 'hide') {
+            text = '';
+            /*
+        } else if (type == 'shorten') {
+            text = text.trunc(12);
+        }
+        else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
+            text = stringDivider(text, 16, '\n');
+            */
+        }
+        return text;
+    };
+
+    // TODO: use Ole here to stylize this layer using the ESRI styles.
+    const zoningStyle = (feature, resolution) => {
+        return new Style({
+            stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
+            fill: new Fill({color: [76, 129, 205, .250]}),
+            text: createTextStyle(feature, resolution, zoningLabelParams, getZoningLabel)
+        });
+    };
+
+    // yellow outline, clear center lets you see what you have selected!
+    const selectedStyle = new Style({ // yellow
+        stroke: new Stroke({color: 'rgba(255, 255, 0, 1.0)', width:2}),
+        fill:   new Fill({color: 'rgba(255, 255, 0, .001)'}),
+    });
+
+    const yellowStyle = new Style({
+        stroke: new Stroke({color: 'yellow', width: 1})
+    });
+
+    // FIXME this should be an SVG diamond shape
+    const milepostStyle = new Style({
+        image: new Circle({
+            radius: 3,
+            fill: new Fill({color: 'yellow'}),
+            stroke: new Stroke({color: 'yellow', width: 1})
+        })
+    });
 //const taxlotStyle = new Style({
 //    fill: new Fill({color:"rgba(128,0,0,0.1)"}),
 //    stroke: new Stroke({color:"rgba(0,0,0,1.0)", width:1}),
@@ -210,80 +248,13 @@ const taxlotTextStyle = (feature, resolution) => {
     return new Style({
         fill: new Fill({color:"rgba(128,0,0,0.1)"}),
         stroke: new Stroke({color:"rgba(0,0,0,1.0)", width:1}),
-        text: createTextStyle(feature, resolution, taxlotsLabelParams, getTaxlotLabel)
+        text: createTextStyle(feature, resolution, taxlotLabelParams, getTaxlotLabel)
     });
 }
 
-const zoningLabelField = "Zone";
-
-const zoningLabelParams = {
-    text: "normal",
-    weight: "", // italic small-caps bold
-    size: "18px",  // see CSS3 -- can use 'em' or 'px' as unit
-    font: "verdana", // sans-serif cursive serif
-    maxreso: 4800,
-    placement: "point", // point or line
-    align: "center", // left, right, center, end, start
-    baseline: "middle", // bottom top middle alphabetic hanging ideographic
-    rotation: 0,
-    maxangle: 0,
-    overflow: true,
-    offsetX: 0,
-    offsetY: 0,
-    color: "white",
-    outline: "black", // TODO turn on only with aerial?
-    outlineWidth: 3
-}
-
-const getZoningLabel = (feature, resolution, params) => {
-    let text = feature.get(zoningLabelField);
-    const type = params.text;
-    const maxResolution = params.maxreso;
-
-    if (resolution > maxResolution) {
-        text = '';
-    } else if (type == 'hide') {
-        text = '';
-/*
-    } else if (type == 'shorten') {
-        text = text.trunc(12);
-    }
-     else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
-        text = stringDivider(text, 16, '\n');
-*/
-    }
-    return text;
-};
-
-// TODO: use Ole here to stylize this layer using the ESRI styles.
-const zoningStyle = (feature, resolution) => {
-    return new Style({
-        stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
-        fill: new Fill({color: [76, 129, 205, .250]}),
-        text: createTextStyle(feature, resolution, zoningLabelParams, getZoningLabel)
-    });
-};
-
-// yellow outline, clear center lets you see what you have selected!
-const selectedStyle = new Style({ // yellow
-    stroke: new Stroke({color: 'rgba(255, 255, 0, 1.0)', width:2}),
-    fill:   new Fill({color: 'rgba(255, 255, 0, .001)'}),
-});
-
-const yellowStyle = new Style({
-    stroke: new Stroke({color: 'yellow', width: 1})
-});
-
-// FIXME this should be an SVG diamond shape
-const milepostStyle = new Style({
-    image: new Circle({
-        radius: 3,
-        fill: new Fill({color: 'yellow'}),
-        stroke: new Stroke({color: 'yellow', width: 1})
-    })
-});
 
 const TAXLOT_LAYER_TITLE = "Taxlots"
+const taxlotPopupField = 'TAXLOTKEY';
 
 /* ========================================================================== */
 
@@ -372,7 +343,7 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             features.forEach( (feature) => {
                 const attributes = {};
                 // Copy the data from each feature into a list
-                taxlotsColumns.forEach ( (column) => {
+                taxlotColumns.forEach ( (column) => {
                     attributes[column.dataField] = feature.get(column.dataField);
                 });
                 rows.push(attributes)
@@ -387,7 +358,7 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
         setSelectCount(s);
         if (s) {
             const item = selectedFeatures.item(0);
-            popup.show(e.mapBrowserEvent.coordinate, item.get(taxlotsKey).trim());
+            popup.show(e.mapBrowserEvent.coordinate, item.get(taxlotKey).trim());
         } else {
             popup.hide()
         }
@@ -510,10 +481,7 @@ const Map46 = ({title, center, zoom, setMapExtent}) => {
             <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
             <control.ScaleLine units="us"/>
         </Map>
-{/*
-        <BootstrapTable bootstrap4 striped condensed
-            keyField={taxlotsKey} columns={taxlotsColumns} data={rows}/>
-            */}
+
         </>
     );
 }

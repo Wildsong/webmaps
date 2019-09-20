@@ -89,8 +89,10 @@ Doing this will bundle up a set of files that can be deployed in the dist/ folde
 
 ## Deploy it
 
-For example, to https://map46.com/
+For internal use I have a script "tasks/publish.sh" that
+rebuilds the bundle and then copies the new files to our server.
 
-    scp -r dist/* bellman.wildsong.biz:/var/www/map46/html
-
-I usually do an "rm -f" to clean out the html folder first.
+To deploy to Map46.com at https://map46.com/maps/ I can just copy files with rsync.
+```
+    rsync -av --delete dist/* box5637.bluehost.com:public_html/map46/maps/
+```
