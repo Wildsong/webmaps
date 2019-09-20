@@ -93,6 +93,23 @@ const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
 const dogamiLandslideUrl = dogamiServer + "/Landslide_Susceptibility/ImageServer"
 const dogamiSlidoUrl = dogamiServer + "/SLIDO3_4/MapServer"
 
+// NOAA Sea Level Rise
+// https://coast.noaa.gov/slrdata/
+// https://www.climate.gov/news-features/decision-makers-toolbox/viewing-sea-level-rise
+//
+const noaaSeaLevelServer = "https://coast.noaa.gov/arcgis/rest/services"
+const noaa0ft  = noaaSeaLevelServer + "/dc_slr/conf_0ft/MapServer"
+const noaa1ft  = noaaSeaLevelServer + "/dc_slr/conf_1ft/MapServer"
+const noaa3ft  = noaaSeaLevelServer + "/dc_slr/conf_3ft/MapServer"
+const noaa5ft  = noaaSeaLevelServer + "/dc_slr/conf_5ft/MapServer"
+const noaa10ft = noaaSeaLevelServer + "/dc_slr/conf_10ft/MapServer"
+
+// FEMA hazards
+// https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
+//
+const FEMA_NFHL_Url = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
+
+/*
 // Web Markers
 const wfsSource = myGeoServer + "/ows?" + "service=WFS&version=2.0.0&request=GetFeature"
 const webMarkersUrl = wfsSource + '&typeNames=' + workspace + '%3Aweb_markers'
@@ -103,6 +120,7 @@ const markerStyle = new Style({
         stroke: new Stroke({color: 'red', width: 1})
     })
 });
+*/
 
 // County extent rectangle
 const xform = (coordinates) => {
@@ -111,9 +129,6 @@ const xform = (coordinates) => {
     }
     return coordinates
 }
-
-// FEMA https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
-const FEMA_NFHL_arcgisREST = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
 
 /*
 const plssStyle = new Style({
@@ -336,12 +351,14 @@ const taxlotPopupField = 'TAXLOTKEY';
 
 const MapPage = ({title, center, zoom, setMapExtent}) => {
     const [basemapLayers] = useState(new Collection());
+    const [sealevelLayers] = useState(new Collection());
     const [hazardsLayers] = useState(new Collection());
     const [zoningLayers] = useState(new Collection());
     const [mapLayers] = useState(new Collection([
         new LayerGroup({title: "Base", layers:basemapLayers}),
-        new LayerGroup({title: "Hazards", layers:hazardsLayers}),
-        new LayerGroup({title: "Zoning", layers:zoningLayers}),
+        new LayerGroup({title: "DOGAMI Hazards", layers:hazardsLayers, visible:false}),
+        new LayerGroup({title: "NOAA Sea Level Rise", layers:sealevelLayers, visible:false}),
+        new LayerGroup({title: "Zoning", layers:zoningLayers, visible:false}),
     ]));
     const [theMap] = useState(new olMap({
         view: new olView({
@@ -487,29 +504,47 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                     </CollectionProvider>
 
                     <CollectionProvider collection={hazardsLayers}>
-                        <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
+                        <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
                             <source.ImageArcGISRest url={dogamiLandslideUrl}/>
                         </layer.Image>
 
-                        <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={false} extent={EXTENT_WM}>
+                        <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
                         <source.ImageArcGISRest url={dogamiSlidoUrl}/>
                         </layer.Image>
                     </CollectionProvider>
 
+                    <CollectionProvider collection={sealevelLayers}>
+                        <layer.Image title="0 foot" reordering={false} visible={true}>
+                            <source.ImageArcGISRest url={noaa0ft}/>
+                        </layer.Image>
+                        <layer.Image title="1 foot" reordering={false} visible={false}>
+                            <source.ImageArcGISRest url={noaa1ft}/>
+                        </layer.Image>
+                        <layer.Image title="3 foot" reordering={false} visible={false}>
+                            <source.ImageArcGISRest url={noaa3ft}/>
+                        </layer.Image>
+                        <layer.Image title="5 foot" reordering={true} visible={false}>
+                            <source.ImageArcGISRest url={noaa5ft}/>
+                        </layer.Image>
+                        <layer.Image title="10 foot" reordering={false} visible={false}>
+                            <source.ImageArcGISRest url={noaa10ft}/>
+                        </layer.Image>
+                    </CollectionProvider>
+
                     <CollectionProvider collection={zoningLayers}>
-                        <layer.Vector title="Zoning, Warrenton" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                        <layer.Vector title="Zoning, Warrenton" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
                             <source.JSON url={ccZoningWarrentonUrl} loader="esrijson"/>
                         </layer.Vector>
 
-                        <layer.Vector title="Zoning, Cannon Beach" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                        <layer.Vector title="Zoning, Cannon Beach" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
                             <source.JSON url={ccZoningCannonBeachUrl} loader="esrijson"/>
                         </layer.Vector>
 
-                        <layer.Vector title="Zoning, Astoria" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                        <layer.Vector title="Zoning, Astoria" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
                             <source.JSON url={ccZoningAstoriaUrl} loader="esrijson"/>
                         </layer.Vector>
 
-                        <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={false}>
+                        <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
                             <source.JSON url={ccZoningUrl} loader="esrijson"/>
                         </layer.Vector>
                     </CollectionProvider>
@@ -543,6 +578,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
                         </layer.Image>
 
+{/*
                         <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
                             <source.Vector features={gpxFeatures}>
                             <interaction.DragAndDrop fit={true}/>
@@ -552,7 +588,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         <layer.Vector title="Web markers" style={markerStyle} >
                             <source.JSON url={webMarkersUrl} loader="geojson"/>
                         </layer.Vector>
-
+*/}
                         <layer.Vector title="Extent" opacity={1} extent={EXTENT_WM}>
                             <source.Vector>
                                 <Feature id="Rect1" style={yellowStyle}>
