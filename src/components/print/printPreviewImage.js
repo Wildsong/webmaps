@@ -33,8 +33,8 @@ class PrintPreviewImage extends React.Component {
         // TODO: Get the image size from the props.
         this.state = {
             size: {
-                width: 600,
-                height: 400
+                width: 300,
+                height: 200
             }
         };
     }
@@ -46,6 +46,7 @@ class PrintPreviewImage extends React.Component {
         };
 
         const print_data = this.props.print.printData;
+        console.log("Here comes a preview", this.props.print);
 
         if (print_data) {
             if (print_data.substring(0, 3) === 'err') {

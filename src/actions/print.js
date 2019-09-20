@@ -27,6 +27,7 @@ import {PRINT} from './action-types';
 /* Action issued to start a print request.
  */
 export function printRequest(width, height, center, resolution, format = 'image/png') {
+    console.log("printRequest", width, height, center, resolution, format);
     return {
         type: PRINT.REQUEST,
         size: [width, height],
@@ -38,6 +39,7 @@ export function printRequest(width, height, center, resolution, format = 'image/
 /* Action issued when the print image data should be updated.
  */
 export function printImage(data) {
+    console.log("printImage", data);
     return {
         type: PRINT.IMAGE,
         data

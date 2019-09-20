@@ -11,11 +11,6 @@ import moment from 'moment'
 
 import Mark from 'markup-js'
 
-import shortid from 'shortid'
-for (let i=0; i<10; i++) {
-    console.log("shortid test", shortid.generate());
-}
-
 //import PrintImage from './printImage';
 
 import PrintPreviewImage from './printPreviewImage';
@@ -92,7 +87,7 @@ const PrintButton = () => {
             'bst': 'NONE'
         }
 */
-        console.log("element = ", element);
+        console.log("addMapImage element = ", element);
 
         html2canvas(document.querySelector(".ol-viewport")).then((canvas) => {
             //document.body.appendChild(canvas) // this attaches the image at the bottom of the window
@@ -212,7 +207,7 @@ const PrintButton = () => {
                     addText(doc, element);
                     break;
                 case 'map':
-                    //addMapImage(doc, element);
+                    addMapImage(doc, element);
                     break;
                 case 'image':
                     addImage(doc, element);
@@ -265,7 +260,7 @@ const PrintButton = () => {
             <Button onClick={togglePrintModal}><FontAwesomeIcon icon={faPrint}/>Print</Button>
             <Modali.Modal {...printModal}>
                 <div className="print-modal">
-                <div className="print-preview">
+                <div style={{width:300,height:200}}>
                 <PrintPreviewImage/>
                 </div>
                 <div className="print-form">
