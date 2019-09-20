@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/brian32768/map46.git"
+    "url": "git+ssh://git@github.com/Wildsong/webmaps.git"
   },
   "keywords": [
     "gis",
@@ -20,9 +20,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/brian32768/map46/issues"
+    "url": "https://github.com/Wildsong/webmaps/issues"
   },
-  "homepage": "https://github.com/brian32768/map46#readme",
+  "homepage": "https://github.com/Wildsong/webmaps",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.24",
     "@fortawesome/free-solid-svg-icons": "^5.11.1",
