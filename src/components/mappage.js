@@ -318,14 +318,14 @@ const TaxlotTable = ({rows}) => {
             props => (
                 <div>
                     <ExportCSVButton {...props.csvProps}>CSV Export</ExportCSVButton>
-                    <BootstrapTable  {...props.baseProps} />
+                    <BootstrapTable bootstrap4 striped condensed {...props.baseProps} />
                 </div>
             )
         }
         </ToolkitProvider>
         </>
     );
-    //bootstrap4 striped condensed
+
     //keyField={taxlotKey} columns={taxlotColumns} data={rows}/>
 }
 
