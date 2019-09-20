@@ -353,10 +353,12 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
     const [basemapLayers] = useState(new Collection());
     const [sealevelLayers] = useState(new Collection());
     const [hazardsLayers] = useState(new Collection());
+    const [floodLayers] = useState(new Collection());
     const [zoningLayers] = useState(new Collection());
     const [mapLayers] = useState(new Collection([
         new LayerGroup({title: "Base", layers:basemapLayers}),
         new LayerGroup({title: "DOGAMI Hazards", layers:hazardsLayers, visible:false}),
+        new LayerGroup({title: "FEMA Flood", layers:floodLayers, visible:false}),
         new LayerGroup({title: "NOAA Sea Level Rise", layers:sealevelLayers, visible:false}),
         new LayerGroup({title: "Zoning", layers:zoningLayers, visible:false}),
     ]));
@@ -510,6 +512,12 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
 
                         <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
                         <source.ImageArcGISRest url={dogamiSlidoUrl}/>
+                        </layer.Image>
+                    </CollectionProvider>
+
+                    <CollectionProvider collection={floodLayers}>
+                        <layer.Image title="National Flood Hazard Layer (NFHL)" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
+                            <source.ImageArcGISRest url={FEMA_NFHL_Url}/>
                         </layer.Image>
                     </CollectionProvider>
 
