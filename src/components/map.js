@@ -38,7 +38,7 @@ import LayerGroup from 'ol/layer/Group'
 import Collection from 'ol/Collection'
 import {toStringXY} from 'ol/coordinate'
 import Style from 'ol/style/Style'
-import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
+import {Circle, Fill, Icon, Stroke} from 'ol/style'
 import {platformModifierKeyOnly} from 'ol/events/condition'
 import GeoJSON from 'ol/format/GeoJSON'
 
@@ -208,46 +208,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
     const coordFormatter = (coord) => {
 		return toStringXY(coord, 4);
 	}
-
-    // Returns true if the event should trigger a taxlot selection
-    const myCondition = (e) => {
-        switch(e.type) {
-            case 'click':
-                return true;
-
-            case 'pointerdown':
-            case 'pointerup':
-            case 'singleclick':
-            case 'wheel':
-            case 'pointerdrag':
-//                console.log('condition:', e.type);
-                return false;
-
-            case 'pointermove':
-                // roll over - just show taxlot popup
-                // FIXME I don't know why it's not seeing any features
-                // works with Geoserver, I think. ArcGIS related??
-                // Naa... already converted to data by this time.
-                {
-                    const lonlat = toLonLat(e.coordinate)
-                    const features = taxlotLayerRef.current.getSource().getFeaturesAtCoordinate(lonlat)
-                    if (features.length > 0) {
-                        const text = features[0].get(taxlotPopupField)
-                        if (text != null && text.length > 0) {
-                            popup.show(e.coordinate, text);
-                            return false;
-                        }
-                    }
-                }
-                popup.hide();
-                return false; // don't do a selection!
-
-    //            case 'platformModifierKeyOnly':
-    //                return false;
-        }
-        console.log("?? condition", e.type);
-        return false; // pass event along I guess
-    }
 
     const copyFeaturesToTable = (features) => {
         const rows = [];

@@ -1,38 +1,18 @@
 import React, {useState, useEffect, useContext, useRef} from 'react'; // eslint-disable-line no-unused-vars
 import PropTypes from 'prop-types'
-import {connect} from 'react-redux'
-
-import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
+import {control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
 import {CollectionProvider} from '@map46/ol-react/collection-context' // eslint-disable-line no-unused-vars
-
-import {Map as olMap, View as olView} from 'ol'
 import {toLonLat, fromLonLat} from 'ol/proj'
-import {defaults as defaultInteractions} from 'ol/interaction'
-import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
-
 import {WGS84, WM} from '@map46/ol-react/constants'
-import {DEFAULT_CENTER, MINZOOM, MAXZOOM, BOOKMARKS} from '../constants'
-
-import Select from 'react-select' // eslint-disable-line no-unused-vars
-import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
-
 import Popup from 'ol-ext/overlay/Popup'
-import BaseMap from './basemap' // eslint-disable-line no-unused-vars
-//import Position from './position'
+import Collection from 'ol/Collection'
+import {platformModifierKeyOnly} from 'ol/events/condition'
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
 import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
 
-import Collection from 'ol/Collection'
 import Style from 'ol/style/Style'
-import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
-import {platformModifierKeyOnly} from 'ol/events/condition'
-import GeoJSON from 'ol/format/GeoJSON'
-
-import Dissolve from '@turf/dissolve'
-import Buffer from '@turf/buffer'
-import {featureCollection} from '@turf/helpers'
-
+import {Fill, Stroke} from 'ol/style'
 import {createTextStyle} from './styles'
 
 // Clatsop County services
@@ -185,7 +165,6 @@ const Taxlots = ({layers, selectedFeatures, selectionChanged, taxlotLayerRef}) =
     //            case 'platformModifierKeyOnly':
     //                return false;
         }
-        console.log("?? condition", e.type);
         return false; // pass event along I guess
     }
 
