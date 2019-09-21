@@ -7,7 +7,7 @@ import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
 import Style from 'ol/style/Style'
 import {Fill, Stroke, Text} from 'ol/style'
 import {createTextStyle} from './styles'
-import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
+import {myArcGISServer, MAXRESOLUTION} from '../constants'
 
 const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/0";
 const ccZoningAstoriaUrl = myArcGISServer + "/Zoning/FeatureServer/1";
@@ -64,7 +64,6 @@ const zoningStyle = (feature, resolution) => {
     });
 };
 
-
 /* ========================================================================== */
 
 const Zoning = ({layers}) => {
@@ -87,7 +86,6 @@ const Zoning = ({layers}) => {
                     <source.JSON url={ccZoningUrl} loader="esrijson"/>
                 </layer.Vector>
             </CollectionProvider>
-
         </>
     )
 }

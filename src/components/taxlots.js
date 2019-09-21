@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 
 import {Map, View, Feature, Overlay, control, geom, interaction, layer, source} from '@map46/ol-react';  // eslint-disable-line no-unused-vars
-import {CollectionContext} from '@map46/ol-react/collection-context' // eslint-disable-line no-unused-vars
+import {CollectionProvider} from '@map46/ol-react/collection-context' // eslint-disable-line no-unused-vars
 
 import {Map as olMap, View as olView} from 'ol'
 import {toLonLat, fromLonLat} from 'ol/proj'
@@ -33,43 +33,7 @@ import Dissolve from '@turf/dissolve'
 import Buffer from '@turf/buffer'
 import {featureCollection} from '@turf/helpers'
 
-const createTextStyle = (feature, resolution, params, getText) => {
-    var align = params.align;
-    var baseline = params.baseline;
-    var offsetX = parseInt(params.offsetX, 10);
-    var offsetY = parseInt(params.offsetY, 10);
-    var placement = params.placement ? params.placement : undefined;
-    var maxAngle = params.maxangle ? parseFloat(params.maxangle) : undefined;
-    var overflow = params.overflow ? (params.overflow == 'true') : undefined;
-    var rotation = parseFloat(params.rotation);
-/*
-    if (params.font == '\'Open Sans\'' && !openSansAdded) {
-        var openSans = document.createElement('link');
-        openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
-        openSans.rel = 'stylesheet';
-        document.getElementsByTagName('head')[0].appendChild(openSans);
-        openSansAdded = true;
-    }
-*/
-    var fillColor = params.color;
-    var outlineColor = params.outline;
-    var outlineWidth = parseInt(params.outlineWidth, 10);
-    return new Text({
-        textAlign: align == '' ? undefined : align,
-        textBaseline: baseline,
-        font: params.weight + ' ' + params.size + ' ' + params.font,
-        text: getText(feature, resolution, params),
-        fill: new Fill({color: fillColor}),
-        stroke: new Stroke({color: outlineColor, width: outlineWidth}),
-        offsetX: offsetX,
-        offsetY: offsetY,
-        placement: placement,
-        maxAngle: maxAngle,
-        overflow: overflow,
-        rotation: rotation,
-        scale: 1 // TODO this should change with zoom
-    });
-};
+import {createTextStyle} from './styles'
 
 // Clatsop County services
 // map services
@@ -77,6 +41,9 @@ const createTextStyle = (feature, resolution, params, getText) => {
 //const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
 const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
 const ccTaxlotFormat = 'esrijson'
+
+export const TAXLOT_KEY = 'TAXLOTKEY';
+const taxlotLabelField = 'Taxlot';
 
 /* GeoServer WFS
 To generate this WFS service URL, go into GeoServer Layer Preview,
@@ -146,9 +113,7 @@ const taxlotTextStyle = (feature, resolution) => {
     });
 }
 
-const taxlotKey       = 'TAXLOTKEY';
-const taxlotLabelField = 'Taxlot';
-const taxlotColumns = [
+export const taxlotColumns = [
     {dataField: 'ACCOUNT_ID', text: 'Account', sort: true,
         formatter: (value, record) => {
             return (
@@ -176,31 +141,13 @@ const taxlotColumns = [
     {dataField: 'ZIP_CODE',   text: 'Zip', sort: true},
 ]
 
-const TAXLOT_LAYER_TITLE = "Taxlots"
+export const TAXLOT_LAYER_TITLE = "Taxlots"
 const taxlotPopupField = 'TAXLOTKEY';
 
 /* ========================================================================== */
 
-const Taxlots = ({selectedFeatures}) => {
+const Taxlots = ({layers, selectedFeatures, selectionChanged, taxlotLayerRef}) => {
     const [popup] = useState(new Popup());
-
-    // Find the taxlot layer so we can query it for popups.
-
-    const taxlotLayerRef = useRef(null);
-    const bufferLayerRef = useRef(null);
-    const bufferFeatures = new Collection();
-
-    useEffect(() => {
-        theMap.addOverlay(popup);
-        mapLayers.forEach(layer => {
-            //map.addLayer(layer);
-            if (layer.get("title") == TAXLOT_LAYER_TITLE)
-                taxlotLayerRef.current = layer;
-            if (layer.get("title") == 'Buffer')
-                bufferLayerRef.current = layer;
-        })
-        console.log("taxlotLayerRef = ", taxlotLayerRef)
-    }, []);
 
     // Returns true if the event should trigger a taxlot selection
     const myCondition = (e) => {
@@ -246,33 +193,41 @@ const Taxlots = ({selectedFeatures}) => {
         const s = selectedFeatures.getLength();
         if (s) {
             const item = selectedFeatures.item(0);
-            popup.show(e.mapBrowserEvent.coordinate, item.get(taxlotKey).trim());
+            popup.show(e.mapBrowserEvent.coordinate, item.get(TAXLOT_KEY).trim());
         } else {
             popup.hide()
         }
         if (selectedFeatures.getLength() > 0) {
-            bufferFeatures.clear();
-            copyFeaturesToTable(selectedFeatures)
+            selectionChanged(e);
         }
         e.stopPropagation();
     }
 
     return (
         <>
+        <CollectionProvider collection={layers}>
             <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
                     <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
                     <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
                 </source.JSON>
             </layer.Vector>
+{/*
+            <layer.VectorTile title="Taxlots" declutter={true} crossOrigin="anonymous" style={taxlotStyle}>
+                <source.VectorTile url={taxlotUrl}>
+                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={click} selected={onSelectEvent}/>
+                    <interaction.SelectDragBox condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                </source.VectorTile>
+            </layer.VectorTile>
+*/}
+        </CollectionProvider>
         </>
     )
 }
 Taxlots.propTypes = {
-    selectedFeatures: PropTypes.instanceOf(Collection),
+    layers: PropTypes.instanceOf(Collection).isRequired,
+    selectedFeatures: PropTypes.instanceOf(Collection).isRequired,
+    selectionChanged: PropTypes.func,
+    taxlotLayerRef: PropTypes.object
 }
-const mapStateToProps = (state) => ({
-});
-const mapDispatchToProps = {
-};
-export default connect(mapStateToProps, mapDispatchToProps)(Taxlots);
+export default Taxlots;
