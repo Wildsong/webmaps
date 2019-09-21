@@ -30,6 +30,7 @@ const BaseMap = () => {
             <layer.Tile title="NAIP 2016" reordering={false} visible={false}>
                 <source.XYZ url={naipImageryUrl}/>
             </layer.Tile>
+
             <layer.Tile title="Aerial, Oregon 2018" reordering={false} visible={true}>
                 <source.XYZ url={osipImageryUrl}/>
             </layer.Tile>

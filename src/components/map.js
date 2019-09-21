@@ -24,7 +24,7 @@ import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
 import 'ol-ext/dist/ol-ext.css'
 
 import {WGS84, WM} from '@map46/ol-react/constants'
-import {DEFAULT_CENTER, MINZOOM, MAXZOOM} from '../constants'
+import {DEFAULT_CENTER, MINZOOM, MAXZOOM, BOOKMARKS} from '../constants'
 
 import Select from 'react-select' // eslint-disable-line no-unused-vars
 import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
@@ -674,6 +674,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
 
                     <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
                     <control.ScaleLine units="us"/>
+                    <control.GeoBookmark marks={BOOKMARKS}/>
                 </Map>
 
                 <div className="wm-overview">
