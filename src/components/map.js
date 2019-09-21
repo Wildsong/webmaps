@@ -30,8 +30,7 @@ import Select from 'react-select' // eslint-disable-line no-unused-vars
 import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
 
 import Popup from 'ol-ext/overlay/Popup'
-import BaseMap from './basemap' // eslint-disable-line no-unused-vars
-//import Position from './position'
+
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
 import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
@@ -44,9 +43,16 @@ import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
 import {platformModifierKeyOnly} from 'ol/events/condition'
 import GeoJSON from 'ol/format/GeoJSON'
 
+import {createTextStyle} from './styles'
+
 import Dissolve from '@turf/dissolve'
 import Buffer from '@turf/buffer'
 import {featureCollection} from '@turf/helpers'
+
+import BaseMap from './basemap' // eslint-disable-line no-unused-vars
+import DogamiHazards from './hazards' // eslint-disable-line no-unused-vars
+import SealevelRise from './sealevelrise' // eslint-disable-line no-unused-vars
+import Zoning from './zoning' // eslint-disable-line no-unused-vars
 
 const geocacheIcon = require('../../assets/traditional.png'); // eslint-disable-line no-undef
 const gpxStyle = new Style({
@@ -55,59 +61,6 @@ const gpxStyle = new Style({
     fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
 });
 
-const createTextStyle = (feature, resolution, params, getText) => {
-    var align = params.align;
-    var baseline = params.baseline;
-    var offsetX = parseInt(params.offsetX, 10);
-    var offsetY = parseInt(params.offsetY, 10);
-    var placement = params.placement ? params.placement : undefined;
-    var maxAngle = params.maxangle ? parseFloat(params.maxangle) : undefined;
-    var overflow = params.overflow ? (params.overflow == 'true') : undefined;
-    var rotation = parseFloat(params.rotation);
-/*
-    if (params.font == '\'Open Sans\'' && !openSansAdded) {
-        var openSans = document.createElement('link');
-        openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
-        openSans.rel = 'stylesheet';
-        document.getElementsByTagName('head')[0].appendChild(openSans);
-        openSansAdded = true;
-    }
-*/
-    var fillColor = params.color;
-    var outlineColor = params.outline;
-    var outlineWidth = parseInt(params.outlineWidth, 10);
-    return new Text({
-        textAlign: align == '' ? undefined : align,
-        textBaseline: baseline,
-        font: params.weight + ' ' + params.size + ' ' + params.font,
-        text: getText(feature, resolution, params),
-        fill: new Fill({color: fillColor}),
-        stroke: new Stroke({color: outlineColor, width: outlineWidth}),
-        offsetX: offsetX,
-        offsetY: offsetY,
-        placement: placement,
-        maxAngle: maxAngle,
-        overflow: overflow,
-        rotation: rotation,
-        scale: 1 // TODO this should change with zoom
-    });
-};
-
-// DOGAMI
-const dogamiServer = "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
-const dogamiLandslideUrl = dogamiServer + "/Landslide_Susceptibility/ImageServer"
-const dogamiSlidoUrl = dogamiServer + "/SLIDO3_4/MapServer"
-
-// NOAA Sea Level Rise
-// https://coast.noaa.gov/slrdata/
-// https://www.climate.gov/news-features/decision-makers-toolbox/viewing-sea-level-rise
-//
-const noaaSeaLevelServer = "https://coast.noaa.gov/arcgis/rest/services"
-const noaa0ft  = noaaSeaLevelServer + "/dc_slr/conf_0ft/MapServer"
-const noaa1ft  = noaaSeaLevelServer + "/dc_slr/conf_1ft/MapServer"
-const noaa3ft  = noaaSeaLevelServer + "/dc_slr/conf_3ft/MapServer"
-const noaa5ft  = noaaSeaLevelServer + "/dc_slr/conf_5ft/MapServer"
-const noaa10ft = noaaSeaLevelServer + "/dc_slr/conf_10ft/MapServer"
 
 // FEMA hazards
 // https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
@@ -135,13 +88,6 @@ const xform = (coordinates) => {
     return coordinates
 }
 
-/*
-const plssStyle = new Style({
-    stroke: new Stroke({color: [0, 0, 0, 1], width:1}),
-    //fill: new Fill({color: [255, 0, 0, .250]}),
-});
-*/
-
 // Clatsop County services
 // map services
 const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
@@ -149,11 +95,6 @@ const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
 
 // feature services
 const ccMilepostsUrl = myArcGISServer + "/Highway_Mileposts/FeatureServer/0";
-
-const ccZoningUrl = myArcGISServer + "/Zoning/FeatureServer/0";
-const ccZoningAstoriaUrl = myArcGISServer + "/Zoning/FeatureServer/1";
-const ccZoningCannonBeachUrl = myArcGISServer + "/Zoning/FeatureServer/2";
-const ccZoningWarrentonUrl = myArcGISServer + "/Zoning/FeatureServer/3";
 
 //const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'
 const ccTaxlotUrl = myArcGISServer + '/Taxlots/FeatureServer/1'
@@ -209,56 +150,6 @@ const getTaxlotLabel = (feature, resolution, params) => {
         */
     }
     return text;
-};
-
-const zoningLabelField = "Zone";
-
-const zoningLabelParams = {
-    text: "normal",
-    weight: "", // italic small-caps bold
-    size: "18px",  // see CSS3 -- can use 'em' or 'px' as unit
-    font: "verdana", // sans-serif cursive serif
-    maxreso: 4800,
-    placement: "point", // point or line
-    align: "center", // left, right, center, end, start
-    baseline: "middle", // bottom top middle alphabetic hanging ideographic
-    rotation: 0,
-    maxangle: 0,
-    overflow: true,
-    offsetX: 0,
-    offsetY: 0,
-    color: "white",
-    outline: "black", // TODO turn on only with aerial?
-    outlineWidth: 3
-}
-
-const getZoningLabel = (feature, resolution, params) => {
-    let text = feature.get(zoningLabelField);
-    const type = params.text;
-    const maxResolution = params.maxreso;
-
-    if (resolution > maxResolution) {
-        text = '';
-    } else if (type == 'hide') {
-        text = '';
-        /*
-    } else if (type == 'shorten') {
-        text = text.trunc(12);
-    }
-    else if (type == 'wrap' && (!params.placement || params.placement != 'line')) {
-        text = stringDivider(text, 16, '\n');
-        */
-    }
-    return text;
-};
-
-// TODO: use Ole here to stylize this layer using the ESRI styles.
-const zoningStyle = (feature, resolution) => {
-    return new Style({
-        stroke: new Stroke({color: [0, 0, 0, 1], width:.75}),
-        fill: new Fill({color: [76, 129, 205, .250]}),
-        text: createTextStyle(feature, resolution, zoningLabelParams, getZoningLabel)
-    });
 };
 
 // yellow outline, clear center lets you see what you have selected!
@@ -392,7 +283,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
     }, []);
 
     const [showZoom, setShowZoom] = useState(zoom);
-    const [selectCount, setSelectCount] = useState(0);
     const [rows, setRows] = useState([]);
     const [popup] = useState(new Popup());
     /*
@@ -479,7 +369,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
 
     const onSelectEvent = (e) => {
         const s = selectedFeatures.getLength();
-        setSelectCount(s);
         if (s) {
             const item = selectedFeatures.item(0);
             popup.show(e.mapBrowserEvent.coordinate, item.get(taxlotKey).trim());
@@ -487,10 +376,15 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
             popup.hide()
         }
         if (selectedFeatures.getLength() > 0) {
-            bufferFeatures.clear();
-            copyFeaturesToTable(selectedFeatures)
+            selectedFeaturesChanged(e)
         }
         e.stopPropagation();
+    }
+
+    const selectedFeaturesChanged = (e) => {
+        // Callback from Taxlots component
+        bufferFeatures.clear();
+        copyFeaturesToTable(selectedFeatures)
     }
 
     const bufferSelectedFeatures = (e) => {
@@ -553,15 +447,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         <BaseMap layerCollection={basemapLayers}/>
                     </CollectionProvider>
 
-                    <CollectionProvider collection={hazardsLayers}>
-                        <layer.Image title="DOGAMI Landslide Susceptibility" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
-                            <source.ImageArcGISRest url={dogamiLandslideUrl}/>
-                        </layer.Image>
-
-                        <layer.Image title="DOGAMI Slides" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
-                        <source.ImageArcGISRest url={dogamiSlidoUrl}/>
-                        </layer.Image>
-                    </CollectionProvider>
+                    <DogamiHazards layers={hazardsLayers}/>
 
                     <CollectionProvider collection={floodLayers}>
                         <layer.Image title="National Flood Hazard Layer (NFHL)" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
@@ -569,41 +455,9 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         </layer.Image>
                     </CollectionProvider>
 
-                    <CollectionProvider collection={sealevelLayers}>
-                        <layer.Image title="0 foot" reordering={false} visible={true}>
-                            <source.ImageArcGISRest url={noaa0ft}/>
-                        </layer.Image>
-                        <layer.Image title="1 foot" reordering={false} visible={false}>
-                            <source.ImageArcGISRest url={noaa1ft}/>
-                        </layer.Image>
-                        <layer.Image title="3 foot" reordering={false} visible={false}>
-                            <source.ImageArcGISRest url={noaa3ft}/>
-                        </layer.Image>
-                        <layer.Image title="5 foot" reordering={true} visible={false}>
-                            <source.ImageArcGISRest url={noaa5ft}/>
-                        </layer.Image>
-                        <layer.Image title="10 foot" reordering={false} visible={false}>
-                            <source.ImageArcGISRest url={noaa10ft}/>
-                        </layer.Image>
-                    </CollectionProvider>
+                    <SealevelRise layers={sealevelLayers}/>
 
-                    <CollectionProvider collection={zoningLayers}>
-                        <layer.Vector title="Zoning, Warrenton" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
-                            <source.JSON url={ccZoningWarrentonUrl} loader="esrijson"/>
-                        </layer.Vector>
-
-                        <layer.Vector title="Zoning, Cannon Beach" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
-                            <source.JSON url={ccZoningCannonBeachUrl} loader="esrijson"/>
-                        </layer.Vector>
-
-                        <layer.Vector title="Zoning, Astoria" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
-                            <source.JSON url={ccZoningAstoriaUrl} loader="esrijson"/>
-                        </layer.Vector>
-
-                        <layer.Vector title="Zoning" style={zoningStyle} reordering={false} maxResolution={MAXRESOLUTION} extent={EXTENT_WM} visible={true}>
-                            <source.JSON url={ccZoningUrl} loader="esrijson"/>
-                        </layer.Vector>
-                    </CollectionProvider>
+                    <Zoning layers={zoningLayers}/>
 
                     <CollectionProvider collection={mapLayers}>
                         <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
