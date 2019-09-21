@@ -23,6 +23,7 @@ import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
 //import 'ol/ol.css'
 import 'ol-ext/dist/ol-ext.css'
 
+import {WGS84, WM} from '@map46/ol-react/constants'
 import {DEFAULT_CENTER, MINZOOM, MAXZOOM} from '../constants'
 
 import Select from 'react-select' // eslint-disable-line no-unused-vars
@@ -33,7 +34,7 @@ import BaseMap from './basemap' // eslint-disable-line no-unused-vars
 //import Position from './position'
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
-import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM, WGS84} from '../constants'
+import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
 
 import LayerGroup from 'ol/layer/Group'
 import Collection from 'ol/Collection'
@@ -268,9 +269,9 @@ const selectedStyle = new Style({ // yellow
 const yellowStyle = new Style({
     stroke: new Stroke({color: 'yellow', width: 1})
 });
-const bufferPolyStyle = new Style({
-    stroke: new Stroke({color: 'rgba(0, 0, 0, 1)', width: 4}),
-    fill: new Fill({color: 'rgba(255, 0, 0, .250)'}),
+const cyanStyle = new Style({
+    stroke: new Stroke({color: 'cyan', width: 4}),
+    fill: new Fill({color: 'rgba(0, 180, 180, .250)'}),
 });
 const taxlotTextStyle = (feature, resolution) => {
     return new Style({
@@ -465,16 +466,14 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
 
     const copyFeaturesToTable = (features) => {
         const rows = [];
-        if (features.getLength()) {
-            features.forEach( (feature) => {
-                const attributes = {};
-                // Copy the data from each feature into a list
-                taxlotColumns.forEach ( (column) => {
-                    attributes[column.dataField] = feature.get(column.dataField);
-                });
-                rows.push(attributes)
+        features.forEach( (feature) => {
+            const attributes = {};
+            // Copy the data from each feature into a list
+            taxlotColumns.forEach ( (column) => {
+                attributes[column.dataField] = feature.get(column.dataField);
             });
-        }
+            rows.push(attributes)
+        });
         setRows(rows);
     }
 
@@ -487,7 +486,10 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         } else {
             popup.hide()
         }
-        copyFeaturesToTable(selectedFeatures)
+        if (selectedFeatures.getLength() > 0) {
+            bufferFeatures.clear();
+            copyFeaturesToTable(selectedFeatures)
+        }
         e.stopPropagation();
     }
 
@@ -615,7 +617,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
                         </layer.Vector>
 
-                        {/*
+{/*
                         <layer.VectorTile title="Taxlots" declutter={true} crossOrigin="anonymous" style={taxlotStyle}>
                             <source.VectorTile url={taxlotUrl}>
                                 <interaction.Select features={selectedFeatures} style={selectedStyle} condition={click} selected={onSelectEvent}/>
@@ -626,17 +628,17 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         <layer.Tile title="Taxmap annotation" opacity={.80}>
                             <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
                         </layer.Tile>
-                        */}
+*/}
 
                         <layer.Image title="PLSS (Clatsop County)" reordering={false}>
                             <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
                         </layer.Image>
 
-                        <layer.Vector title="Buffer" opacity={1} style={bufferPolyStyle}>
+                        <layer.Vector title="Buffer" opacity={1} style={cyanStyle}>
                             <source.Vector features={bufferFeatures} />
                         </layer.Vector>
 
-                        {/*
+{/*
                             <layer.Vector name="Geolocation">
                             </layer.Vector>
                             <Overlay id="popups"
@@ -644,6 +646,8 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             position={ popupPosition }
                             positioning="center-center"
                             />
+*/}
+
 {/*
                         <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
                             <source.Vector features={gpxFeatures}>
@@ -665,7 +669,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             </source.Vector>
                         </layer.Vector>
 
-                        */}
                     </CollectionProvider>
 
                     <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>

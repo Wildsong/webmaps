@@ -32,6 +32,7 @@
     "@mapbox/maki": "^4.0.0",
     "@turf/buffer": "^5.1.5",
     "@turf/dissolve": "^5.1.5",
+    "@turf/helpers": "^6.1.4",
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
     "connected-react-router": "^6.5.2",
