@@ -41,7 +41,11 @@ import {toStringXY} from 'ol/coordinate'
 import Style from 'ol/style/Style'
 import {Circle, Fill, Icon, Stroke, Text} from 'ol/style'
 import {platformModifierKeyOnly} from 'ol/events/condition'
+import GeoJSON from 'ol/format/GeoJSON'
 
+import Dissolve from '@turf/dissolve'
+import Buffer from '@turf/buffer'
+import {featureCollection} from '@turf/helpers'
 
 const geocacheIcon = require('../../assets/traditional.png'); // eslint-disable-line no-undef
 const gpxStyle = new Style({
@@ -264,6 +268,10 @@ const selectedStyle = new Style({ // yellow
 const yellowStyle = new Style({
     stroke: new Stroke({color: 'yellow', width: 1})
 });
+const bufferPolyStyle = new Style({
+    stroke: new Stroke({color: 'rgba(0, 0, 0, 1)', width: 4}),
+    fill: new Fill({color: 'rgba(255, 0, 0, .250)'}),
+});
 const taxlotTextStyle = (feature, resolution) => {
     return new Style({
         fill: new Fill({color:"rgba(128,0,0,0.1)"}),
@@ -280,7 +288,6 @@ const milepostStyle = new Style({
         stroke: new Stroke({color: 'yellow', width: 1})
     })
 });
-
 
 const taxlotKey       = 'TAXLOTKEY';
 const taxlotLabelField = 'Taxlot';
@@ -312,11 +319,12 @@ const taxlotColumns = [
     {dataField: 'ZIP_CODE',   text: 'Zip', sort: true},
 ]
 
+// FIXME MOVE THIS COMPONENT TO ITS OWN FILE!!!
 // FIXME I think it would be cool to hide columns that are empty here.
 
 const {ExportCSVButton} = CSVExport;
 
-const TaxlotTable = ({rows}) => {
+const TaxlotTable = ({rows, onBuffer}) => {
     if (rows.length < 1) {
         return ( <>Select some taxlots!</> );
     }
@@ -332,6 +340,7 @@ const TaxlotTable = ({rows}) => {
         {
             props => (
                 <div>
+                    <Button onClick={onBuffer}>Buffer</Button>
                     <ExportCSVButton {...props.csvProps}>CSV Export</ExportCSVButton>
                     <BootstrapTable bootstrap4 striped condensed {...props.baseProps} />
                 </div>
@@ -392,12 +401,18 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
     // Find the taxlot layer so we can query it for popups.
 
     const taxlotLayerRef = useRef(null);
+    const bufferLayerRef = useRef(null);
+    const [selectedFeatures] = useState(new Collection());
+    const bufferFeatures = new Collection();
+
     useEffect(() => {
         theMap.addOverlay(popup);
         mapLayers.forEach(layer => {
             //map.addLayer(layer);
             if (layer.get("title") == TAXLOT_LAYER_TITLE)
                 taxlotLayerRef.current = layer;
+            if (layer.get("title") == 'Buffer')
+                bufferLayerRef.current = layer;
         })
         console.log("taxlotLayerRef = ", taxlotLayerRef)
     }, []);
@@ -463,7 +478,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         setRows(rows);
     }
 
-    const selectedFeatures = new Collection();
     const onSelectEvent = (e) => {
         const s = selectedFeatures.getLength();
         setSelectCount(s);
@@ -475,6 +489,38 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         }
         copyFeaturesToTable(selectedFeatures)
         e.stopPropagation();
+    }
+
+    const bufferSelectedFeatures = (e) => {
+    // Buffer the currently selected Features, callback from TaxlotTable
+
+        if (selectedFeatures.getLength() <= 0) return
+
+        const format = new GeoJSON({
+            geometry: 'geometry',
+            dataProjection: WGS84,
+            featureProjection: WM,
+        });
+
+        // Add all the selected features to a turf Collection
+        // FIXME I can probably re-write this with a map function
+        const featureArray = [];
+        selectedFeatures.forEach( (feature) => {
+            // convert the feature into a GeoJSON object (and transform into WGS84)
+            const geojson = format.writeFeatureObject(feature);
+            featureArray.push(geojson);
+        })
+        const turfSelectedFeatures = featureCollection(featureArray)
+        const buffered = Buffer(turfSelectedFeatures, 100, {units: 'feet'});
+        const dissolvedFeatures = Dissolve(buffered)
+        // convert the turf shapes into OL Shapes
+        const olShape = format.readFeatures(dissolvedFeatures);
+
+        // add the buffered and dissolved features to the display feature class
+        bufferLayerRef.current.getSource().addFeatures(olShape);
+
+        // find all the taxlots that are touching the buffered polygons
+        // select them
     }
 
     // If you don't catch this event and then you click on the map,
@@ -583,9 +629,21 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         */}
 
                         <layer.Image title="PLSS (Clatsop County)" reordering={false}>
-                        <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
+                            <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
                         </layer.Image>
 
+                        <layer.Vector title="Buffer" opacity={1} style={bufferPolyStyle}>
+                            <source.Vector features={bufferFeatures} />
+                        </layer.Vector>
+
+                        {/*
+                            <layer.Vector name="Geolocation">
+                            </layer.Vector>
+                            <Overlay id="popups"
+                            element={ popup }
+                            position={ popupPosition }
+                            positioning="center-center"
+                            />
 {/*
                         <layer.Vector title="GPX Drag and drop" style={gpxStyle}>
                             <source.Vector features={gpxFeatures}>
@@ -607,14 +665,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             </source.Vector>
                         </layer.Vector>
 
-                        {/*
-                        <layer.Vector name="Geolocation">
-                        </layer.Vector>
-                        <Overlay id="popups"
-                            element={ popup }
-                            position={ popupPosition }
-                            positioning="center-center"
-                        />
                         */}
                     </CollectionProvider>
 
@@ -641,7 +691,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                     />
                 */}
 
-                <TaxlotTable rows={rows} />
+                <TaxlotTable rows={rows} onBuffer={bufferSelectedFeatures}/>
 
             </section>
 

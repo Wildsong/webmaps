@@ -30,6 +30,8 @@
     "@geonet/geohash": "^1.0.10",
     "@map46/ol-react": "^0.7.1",
     "@mapbox/maki": "^4.0.0",
+    "@turf/buffer": "^5.1.5",
+    "@turf/dissolve": "^5.1.5",
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
     "connected-react-router": "^6.5.2",
