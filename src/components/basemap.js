@@ -8,10 +8,6 @@ import {EXTENT_WM} from '../constants'
 // Clatsop County BaseMap
 const ccBasemapUrl = myArcGISServer + "/Clatsop_County_basemap/MapServer/tile/{z}/{y}/{x}"
 
-// ESRI Clarity aerial
-const esriClarityUrl = 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/' +
-                    'World_Imagery/MapServer/tile/{z}/{y}/{x}'
-
 // DOGAMI "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
 const bareEarthHSUrl = "https://gis.dogami.oregon.gov/arcgis/services/Public/BareEarthHS/ImageServer/WMSServer?Layers=0"
 
@@ -27,24 +23,19 @@ const BaseMap = () => {
 
     return (
         <>
-            <layer.Image title="Bare Earth Hillshade" reordering={false} displayInLayerSwitcher={false}>
+            <layer.Image title="Bare Earth Hillshade" reordering={false}>
                 <source.ImageWMS url={bareEarthHSUrl}/>
             </layer.Image>
-{/*
-            <layer.Tile title="ESRI Clarity" baseLayer={true} reordering={false} visible={false}>
-                <source.XYZ url={esriClarityUrl}/>
-            </layer.Tile>
 
-            <layer.Tile title="NAIP 2016" baseLayer={true} reordering={false} visible={false}>
+            <layer.Tile title="NAIP 2016" reordering={false} visible={false}>
                 <source.XYZ url={naipImageryUrl}/>
             </layer.Tile>
-*/}
-            <layer.Tile title="Aerial, Oregon 2018" baseLayer={true} reordering={false} visible={false}>
+            <layer.Tile title="Aerial, Oregon 2018" reordering={false} visible={true}>
                 <source.XYZ url={osipImageryUrl}/>
             </layer.Tile>
 
             {/* Alternatives for streets: conventional or MVT */}
-            <layer.Tile title="OpenStreetMap" baseLayer={true} reordering={false} visible={false} opacity={.75}>
+            <layer.Tile title="OpenStreetMap" reordering={false} visible={false} opacity={.75}>
                 <source.OSM/>
             </layer.Tile>
             {/* MVT
@@ -53,7 +44,7 @@ const BaseMap = () => {
             </layer.VectorTile>
             */}
 
-            <layer.Tile title="Clatsop County"  baseLayer={true} opacity={.80}>
+            <layer.Tile title="Clatsop County"  opacity={.80}>
                 <source.XYZ url={ccBasemapUrl}/>
             </layer.Tile>
         </>
