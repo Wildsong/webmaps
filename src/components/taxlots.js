@@ -133,47 +133,14 @@ const taxlotPopupField = 'TAXLOTKEY';
 
 /* ========================================================================== */
 
-const Taxlots = ({layers, selectedFeatures, selectionChanged, taxlotLayerRef}) => {
+const Taxlots = ({layers, selectedFeatures, selectionChanged, taxlotLayerRef, active}) => {
     const [popup] = useState(new Popup());
+    const [selectActive, setSelectActive] = useState(false);
 
-    // Returns true if the event should trigger a taxlot selection
-    const myCondition = (e) => {
-        switch(e.type) {
-            case 'click':
-                return true;
-
-            case 'pointerdown':
-            case 'pointerup':
-            case 'singleclick':
-            case 'wheel':
-            case 'pointerdrag':
-//                console.log('condition:', e.type);
-                return false;
-
-            case 'pointermove':
-                // roll over - just show taxlot popup
-                // FIXME I don't know why it's not seeing any features
-                // works with Geoserver, I think. ArcGIS related??
-                // Naa... already converted to data by this time.
-                {
-                    const lonlat = toLonLat(e.coordinate)
-                    const features = taxlotLayerRef.current.getSource().getFeaturesAtCoordinate(lonlat)
-                    if (features.length > 0) {
-                        const text = features[0].get(taxlotPopupField)
-                        if (text != null && text.length > 0) {
-                            popup.show(e.coordinate, text);
-                            return false;
-                        }
-                    }
-                }
-                popup.hide();
-                return false; // don't do a selection!
-
-    //            case 'platformModifierKeyOnly':
-    //                return false;
-        }
-        return false; // pass event along I guess
-    }
+    useEffect(() => {
+        console.log('changed selectActive to', active)
+        setSelectActive(active);
+    }, [active]);
 
     const onSelectEvent = (e) => {
         const s = selectedFeatures.getLength();
@@ -194,8 +161,37 @@ const Taxlots = ({layers, selectedFeatures, selectionChanged, taxlotLayerRef}) =
         <CollectionProvider collection={layers}>
             <layer.Vector title={TAXLOT_LAYER_TITLE} style={taxlotTextStyle} reordering={false} maxResolution={MAXRESOLUTION}>
                 <source.JSON url={ccTaxlotUrl} loader={ccTaxlotFormat}>
-                    <interaction.Select features={selectedFeatures} style={selectedStyle} condition={myCondition} selected={onSelectEvent}/>
-                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} condition={platformModifierKeyOnly} selected={onSelectEvent}/>
+                    <interaction.Select features={selectedFeatures} style={selectedStyle} active={selectActive} selected={onSelectEvent} condition={(e) => {
+                            switch(e.type) {
+                                case 'click':
+                                    return true;
+                                case 'pointermove':
+                                    // roll over - just show taxlot popup
+                                    // FIXME I don't know why it's not seeing any features
+                                    // works with Geoserver, I think. ArcGIS related??
+                                    // Naa... already converted to data by this time.
+                                    {
+                                        const lonlat = toLonLat(e.coordinate)
+                                        const features = taxlotLayerRef.current.getSource().getFeaturesAtCoordinate(lonlat)
+                                        if (features.length > 0) {
+                                            const text = features[0].get(taxlotPopupField)
+                                            if (text != null && text.length > 0) {
+                                                popup.show(e.coordinate, text);
+                                                return false;
+                                            }
+                                        }
+                                    }
+                                    popup.hide();
+                                    return false; // don't do a selection!
+
+                        //            case 'platformModifierKeyOnly':
+                        //                return false;
+                                }
+                            //console.log('condition:', e.type);
+                            return false; // pass event along
+                        }
+                    }/>
+                    <interaction.SelectDragBox features={selectedFeatures} style={selectedStyle} selected={onSelectEvent} condition={platformModifierKeyOnly} active={selectActive}/>
                 </source.JSON>
             </layer.Vector>
 {/*
@@ -214,6 +210,7 @@ Taxlots.propTypes = {
     layers: PropTypes.instanceOf(Collection).isRequired,
     selectedFeatures: PropTypes.instanceOf(Collection).isRequired,
     selectionChanged: PropTypes.func,
-    taxlotLayerRef: PropTypes.object
+    taxlotLayerRef: PropTypes.object,
+    active: PropTypes.bool,
 }
 export default Taxlots;

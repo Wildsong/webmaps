@@ -173,6 +173,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         };
     }, []);
     const [showZoom, setShowZoom] = useState(zoom);
+    const [currentTool, setCurrentTool] = useState(0); // FIXME make this a LUT
     const [drawType, setDrawType] = useState('Point');
     const [drawingActive, setDrawingActive] = useState(false);
     const [rows, setRows] = useState([]);
@@ -187,6 +188,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
     const bufferLayerRef = useRef(null);
     const [selectedFeatures] = useState(new Collection());
     const bufferFeatures = new Collection();
+    const drawnFeatures = new Collection();
 
     useEffect(() => {
         theMap.addOverlay(popup);
@@ -294,17 +296,31 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
     })
     const drawnStyle = drawingStyle;
-    const onDrawType = (t) => {
-        console.log('drawtype set to',t);
-        setDrawType(t);
-        setDrawingActive(true);
+    const pickTool = (t) => {
+        setCurrentTool(t);
+        switch (t) {
+            case 1:
+                setDrawType('Point');
+                setDrawingActive(true);
+                break;
+            case 2:
+                setDrawType('LineString');
+                setDrawingActive(true);
+                break;
+            case 3:
+                setDrawType('Polygon');
+                setDrawingActive(true);
+                break;
+            case 4:
+                drawnFeatures.clear();
+                break;
+            default:
+                setDrawingActive(false);
+                break;
+        }
     }
-    const onDrawPoint = () => onDrawType('Point');
-    const onDrawLine = () => onDrawType('LineString');
-    const onDrawFree = () => onDrawType('Freehand');
-    const onDrawPoly = () => onDrawType('Polygon');
 
-    const onCondition = (e) => {
+    const drawCondition = (e) => {
         switch (e.type) {
             case 'pointerdown':
                 return true;
@@ -340,7 +356,8 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         <Taxlots layers={mapLayers}
                             selectedFeatures={selectedFeatures}
                             selectionChanged={selectedFeaturesChanged}
-                            taxlotLayerRef={taxlotLayerRef} />
+                            taxlotLayerRef={taxlotLayerRef}
+                            active={currentTool==0}/>
 
                         <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
                             <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
@@ -387,10 +404,10 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             </source.Vector>
                         </layer.Vector>
 */}
-                    <layer.Vector title="Drawing" opacity={1} style={drawnStyle}>
+                    <layer.Vector title="Drawing" opacity={1} style={drawnStyle} features={drawnFeatures}>
                         <source.Vector>
                             <interaction.Draw type={drawType} active={drawingActive}
-                                condition={onCondition}
+                                condition={drawCondition}
                                 style={drawingStyle}/>
                         </source.Vector>
                     </layer.Vector>
@@ -401,16 +418,19 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                     <control.ScaleLine units="us"/>
                     <control.GeoBookmark marks={BOOKMARKS}/>
                     <control.SearchNominatim onGeocode={onGeocode} viewbox={EXTENT_LL} bounded={true}/>
+                    <control.FullScreen tipLabel="go full screen"/>
+                    <control.Attribution />
                 </Map>
 
                 <div className="wm-overview">
                     <ButtonGroup size="sm">
-                        <Button onClick={onDrawPoint} tag="Point" active={true}>Point</Button>
-                        <Button onClick={onDrawLine} tag="LineString" active={false}>Line</Button>
-                        <Button onClick={onDrawFree} tag="Freehand" active={false}>Freehand</Button>
-                        <Button onClick={onDrawPoly} tag="Polygon" active={false}>Polygon</Button>
+                        <Button onClick={() => pickTool(0)} active={currentTool==0}>Select</Button>
+                        <Button onClick={() => pickTool(1)} active={currentTool==1}>Point</Button>
+                        <Button onClick={() => pickTool(2)} active={currentTool==2}>Line</Button>
+                        <Button onClick={() => pickTool(3)} active={currentTool==3}>Polygon</Button>
+                        <Button onClick={() => pickTool(4)} active={currentTool==3}>Clear</Button>
+                        <PrintButton/>
                     </ButtonGroup>
-                    <PrintButton/>
                     <control.OverviewMap layers={ovLayers} target={null}/>
                     <control.LayerSwitcher switcherClass="wm-switcher ol-layerswitcher" extent={true} reordering={false} show_progress={true} collapsed={false} />
                 </div>
