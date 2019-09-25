@@ -18,6 +18,13 @@ import ToolkitProvider, {CSVExport} from 'react-bootstrap-table2-toolkit' // esl
 import {Map as olMap, View as olView} from 'ol'
 import {toLonLat, fromLonLat} from 'ol/proj'
 import {defaults as defaultInteractions} from 'ol/interaction'
+import Style from 'ol/style/Style'
+import {RegularShape, Circle, Fill, Icon, Stroke, Text} from 'ol/style'
+import LayerGroup from 'ol/layer/Group'
+import Collection from 'ol/Collection'
+import {toStringXY} from 'ol/coordinate'
+import GeoJSON from 'ol/format/GeoJSON'
+
 import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
 
 //import 'ol/ol.css'
@@ -27,20 +34,13 @@ import {WGS84, WM} from '@map46/ol-react/constants'
 import {DEFAULT_CENTER, MINZOOM, MAXZOOM, BOOKMARKS} from '../constants'
 
 import Select from 'react-select' // eslint-disable-line no-unused-vars
-import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
+import {Button, ButtonGroup} from 'reactstrap' // eslint-disable-line no-unused-vars
 
 import Popup from 'ol-ext/overlay/Popup'
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
 import {XMIN,YMIN,XMAX,YMAX, EXTENT_LL, EXTENT_WM} from '../constants'
 
-import LayerGroup from 'ol/layer/Group'
-import Collection from 'ol/Collection'
-import {toStringXY} from 'ol/coordinate'
-import Style from 'ol/style/Style'
-import {Circle, Fill, Icon, Stroke} from 'ol/style'
-import {platformModifierKeyOnly} from 'ol/events/condition'
-import GeoJSON from 'ol/format/GeoJSON'
 
 import {createTextStyle, cyanStyle} from './styles'
 
@@ -172,8 +172,9 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
             window.removeEventListener("resize", listener);
         };
     }, []);
-
     const [showZoom, setShowZoom] = useState(zoom);
+    const [drawType, setDrawType] = useState('Point');
+    const [drawingActive, setDrawingActive] = useState(false);
     const [rows, setRows] = useState([]);
     const [popup] = useState(new Popup());
     /*
@@ -279,6 +280,39 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         view.setZoom(18);
     }
 
+    const drawingStyle = new Style({
+    //    text: new Text({text: markerId.toString(),  offsetY: -10}),
+    //  currently this draws a blue 5 pointed star
+        image: new RegularShape({
+            points: 5,
+            radius: 5,
+            radius1: 5,
+            radius2: 2,
+            stroke: new Stroke({color: 'blue', width: 1.5}),
+        }),
+        stroke: new Stroke({color: "black", width: 4}),
+        fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
+    })
+    const drawnStyle = drawingStyle;
+    const onDrawType = (t) => {
+        console.log('drawtype set to',t);
+        setDrawType(t);
+        setDrawingActive(true);
+    }
+    const onDrawPoint = () => onDrawType('Point');
+    const onDrawLine = () => onDrawType('LineString');
+    const onDrawFree = () => onDrawType('Freehand');
+    const onDrawPoly = () => onDrawType('Polygon');
+
+    const onCondition = (e) => {
+        switch (e.type) {
+            case 'pointerdown':
+                return true;
+        }
+        console.log('unhandled draw condition', e);
+        return false;
+    }
+
     return (
         <>
         <MapProvider map={theMap}>
@@ -353,6 +387,13 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             </source.Vector>
                         </layer.Vector>
 */}
+                    <layer.Vector title="Drawing" opacity={1} style={drawnStyle}>
+                        <source.Vector>
+                            <interaction.Draw type={drawType} active={drawingActive}
+                                condition={onCondition}
+                                style={drawingStyle}/>
+                        </source.Vector>
+                    </layer.Vector>
 
                     </CollectionProvider>
 
@@ -363,6 +404,12 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                 </Map>
 
                 <div className="wm-overview">
+                    <ButtonGroup size="sm">
+                        <Button onClick={onDrawPoint} tag="Point" active={true}>Point</Button>
+                        <Button onClick={onDrawLine} tag="LineString" active={false}>Line</Button>
+                        <Button onClick={onDrawFree} tag="Freehand" active={false}>Freehand</Button>
+                        <Button onClick={onDrawPoly} tag="Polygon" active={false}>Polygon</Button>
+                    </ButtonGroup>
                     <PrintButton/>
                     <control.OverviewMap layers={ovLayers} target={null}/>
                     <control.LayerSwitcher switcherClass="wm-switcher ol-layerswitcher" extent={true} reordering={false} show_progress={true} collapsed={false} />
