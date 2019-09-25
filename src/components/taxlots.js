@@ -16,6 +16,13 @@ import {Fill, Stroke} from 'ol/style'
 import {createTextStyle} from './styles'
 
 // Clatsop County services
+
+// Where the taxmap PDFs live
+const ccTaxmapsPDFUrl = "http://maps.co.clatsop.or.us/applications/taxreports/taxmap/"
+
+// Tax "summary" info
+const ccPropertyInfoUrl = "https://apps.co.clatsop.or.us/property/property_details/?a="
+
 // map services
 
 //const ccTaxlotLabelsUrl = myArcGISServer + '/Taxlots/FeatureServer/0'

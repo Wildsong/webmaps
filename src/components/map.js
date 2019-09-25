@@ -32,7 +32,7 @@ import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
 import Popup from 'ol-ext/overlay/Popup'
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
-import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
+import {XMIN,YMIN,XMAX,YMAX, EXTENT_LL, EXTENT_WM} from '../constants'
 
 import LayerGroup from 'ol/layer/Group'
 import Collection from 'ol/Collection'
@@ -42,7 +42,7 @@ import {Circle, Fill, Icon, Stroke} from 'ol/style'
 import {platformModifierKeyOnly} from 'ol/events/condition'
 import GeoJSON from 'ol/format/GeoJSON'
 
-import {createTextStyle} from './styles'
+import {createTextStyle, cyanStyle} from './styles'
 
 import Dissolve from '@turf/dissolve'
 import Buffer from '@turf/buffer'
@@ -95,10 +95,6 @@ const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
 
 // feature services
 const ccMilepostsUrl = myArcGISServer + "/Highway_Mileposts/FeatureServer/0";
-
-// Where the taxmap PDFs live
-const ccTaxmapsPDFUrl = "http://maps.co.clatsop.or.us/applications/taxreports/taxmap/"
-const ccPropertyInfoUrl = "https://apps.co.clatsop.or.us/property/property_details/?a="
 
 // FIXME this should be an SVG diamond shape
 const milepostStyle = new Style({
@@ -277,6 +273,12 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         return false;
     }
 
+    const onGeocode = (e) => {
+        const view = theMap.getView();
+        view.setCenter(e.coordinate);
+        view.setZoom(18);
+    }
+
     return (
         <>
         <MapProvider map={theMap}>
@@ -357,6 +359,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                     <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
                     <control.ScaleLine units="us"/>
                     <control.GeoBookmark marks={BOOKMARKS}/>
+                    <control.SearchNominatim onGeocode={onGeocode} viewbox={EXTENT_LL} bounded={true}/>
                 </Map>
 
                 <div className="wm-overview">
