@@ -18,6 +18,13 @@ import ToolkitProvider, {CSVExport} from 'react-bootstrap-table2-toolkit' // esl
 import {Map as olMap, View as olView} from 'ol'
 import {toLonLat, fromLonLat} from 'ol/proj'
 import {defaults as defaultInteractions} from 'ol/interaction'
+import Style from 'ol/style/Style'
+import {RegularShape, Circle, Fill, Icon, Stroke, Text} from 'ol/style'
+import LayerGroup from 'ol/layer/Group'
+import Collection from 'ol/Collection'
+import {toStringXY} from 'ol/coordinate'
+import GeoJSON from 'ol/format/GeoJSON'
+
 import {defaultOverviewLayers as ovLayers} from '@map46/ol-react/map-layers'
 
 //import 'ol/ol.css'
@@ -27,22 +34,15 @@ import {WGS84, WM} from '@map46/ol-react/constants'
 import {DEFAULT_CENTER, MINZOOM, MAXZOOM, BOOKMARKS} from '../constants'
 
 import Select from 'react-select' // eslint-disable-line no-unused-vars
-import {Button} from 'reactstrap' // eslint-disable-line no-unused-vars
+import {Button, ButtonGroup} from 'reactstrap' // eslint-disable-line no-unused-vars
 
 import Popup from 'ol-ext/overlay/Popup'
 
 import {myGeoServer, myArcGISServer, workspace, MAXRESOLUTION} from '../constants'
-import {XMIN,YMIN,XMAX,YMAX, EXTENT_WM} from '../constants'
+import {XMIN,YMIN,XMAX,YMAX, EXTENT_LL, EXTENT_WM} from '../constants'
 
-import LayerGroup from 'ol/layer/Group'
-import Collection from 'ol/Collection'
-import {toStringXY} from 'ol/coordinate'
-import Style from 'ol/style/Style'
-import {Circle, Fill, Icon, Stroke} from 'ol/style'
-import {platformModifierKeyOnly} from 'ol/events/condition'
-import GeoJSON from 'ol/format/GeoJSON'
 
-import {createTextStyle} from './styles'
+import {createTextStyle, cyanStyle} from './styles'
 
 import Dissolve from '@turf/dissolve'
 import Buffer from '@turf/buffer'
@@ -95,10 +95,6 @@ const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
 
 // feature services
 const ccMilepostsUrl = myArcGISServer + "/Highway_Mileposts/FeatureServer/0";
-
-// Where the taxmap PDFs live
-const ccTaxmapsPDFUrl = "http://maps.co.clatsop.or.us/applications/taxreports/taxmap/"
-const ccPropertyInfoUrl = "https://apps.co.clatsop.or.us/property/property_details/?a="
 
 // FIXME this should be an SVG diamond shape
 const milepostStyle = new Style({
@@ -176,8 +172,10 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
             window.removeEventListener("resize", listener);
         };
     }, []);
-
     const [showZoom, setShowZoom] = useState(zoom);
+    const [currentTool, setCurrentTool] = useState(0); // FIXME make this a LUT
+    const [drawType, setDrawType] = useState('Point');
+    const [drawingActive, setDrawingActive] = useState(false);
     const [rows, setRows] = useState([]);
     const [popup] = useState(new Popup());
     /*
@@ -190,6 +188,7 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
     const bufferLayerRef = useRef(null);
     const [selectedFeatures] = useState(new Collection());
     const bufferFeatures = new Collection();
+    const drawnFeatures = new Collection();
 
     useEffect(() => {
         theMap.addOverlay(popup);
@@ -277,6 +276,59 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
         return false;
     }
 
+    const onGeocode = (e) => {
+        const view = theMap.getView();
+        view.setCenter(e.coordinate);
+        view.setZoom(18);
+    }
+
+    const drawingStyle = new Style({
+    //    text: new Text({text: markerId.toString(),  offsetY: -10}),
+    //  currently this draws a blue 5 pointed star
+        image: new RegularShape({
+            points: 5,
+            radius: 5,
+            radius1: 5,
+            radius2: 2,
+            stroke: new Stroke({color: 'blue', width: 1.5}),
+        }),
+        stroke: new Stroke({color: "black", width: 4}),
+        fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
+    })
+    const drawnStyle = drawingStyle;
+    const pickTool = (t) => {
+        setCurrentTool(t);
+        switch (t) {
+            case 1:
+                setDrawType('Point');
+                setDrawingActive(true);
+                break;
+            case 2:
+                setDrawType('LineString');
+                setDrawingActive(true);
+                break;
+            case 3:
+                setDrawType('Polygon');
+                setDrawingActive(true);
+                break;
+            case 4:
+                drawnFeatures.clear();
+                break;
+            default:
+                setDrawingActive(false);
+                break;
+        }
+    }
+
+    const drawCondition = (e) => {
+        switch (e.type) {
+            case 'pointerdown':
+                return true;
+        }
+        console.log('unhandled draw condition', e);
+        return false;
+    }
+
     return (
         <>
         <MapProvider map={theMap}>
@@ -304,7 +356,8 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                         <Taxlots layers={mapLayers}
                             selectedFeatures={selectedFeatures}
                             selectionChanged={selectedFeaturesChanged}
-                            taxlotLayerRef={taxlotLayerRef} />
+                            taxlotLayerRef={taxlotLayerRef}
+                            active={currentTool==0}/>
 
                         <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
                             <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
@@ -351,16 +404,33 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             </source.Vector>
                         </layer.Vector>
 */}
+                    <layer.Vector title="Drawing" opacity={1} style={drawnStyle} features={drawnFeatures}>
+                        <source.Vector>
+                            <interaction.Draw type={drawType} active={drawingActive}
+                                condition={drawCondition}
+                                style={drawingStyle}/>
+                        </source.Vector>
+                    </layer.Vector>
 
                     </CollectionProvider>
 
                     <control.MousePosition  projection={WGS84} coordinateFormat={coordFormatter}/>
                     <control.ScaleLine units="us"/>
                     <control.GeoBookmark marks={BOOKMARKS}/>
+                    <control.SearchNominatim onGeocode={onGeocode} viewbox={EXTENT_LL} bounded={true}/>
+                    <control.FullScreen tipLabel="go full screen"/>
+                    <control.Attribution />
                 </Map>
 
                 <div className="wm-overview">
-                    <PrintButton/>
+                    <ButtonGroup size="sm">
+                        <Button onClick={() => pickTool(0)} active={currentTool==0}>Select</Button>
+                        <Button onClick={() => pickTool(1)} active={currentTool==1}>Point</Button>
+                        <Button onClick={() => pickTool(2)} active={currentTool==2}>Line</Button>
+                        <Button onClick={() => pickTool(3)} active={currentTool==3}>Polygon</Button>
+                        <Button onClick={() => pickTool(4)} active={currentTool==3}>Clear</Button>
+                        <PrintButton/>
+                    </ButtonGroup>
                     <control.OverviewMap layers={ovLayers} target={null}/>
                     <control.LayerSwitcher switcherClass="wm-switcher ol-layerswitcher" extent={true} reordering={false} show_progress={true} collapsed={false} />
                 </div>
