@@ -6,7 +6,8 @@ import {myArcGISServer} from '../constants'
 import {EXTENT_WM} from '../constants'
 
 // Clatsop County BaseMap
-const ccBasemapUrl = myArcGISServer + "/Clatsop_County_basemap/MapServer/tile/{z}/{y}/{x}"
+const ccBasemapUrl = myArcGISServer + "/Hosted/Clatsop_County_basemap/MapServer"
+//const ccBasemapUrl = myArcGISServer + "/Clatsop_County_basemap/MapServer/tile/{z}/{y}/{x}"
 
 // DOGAMI "https://gis.dogami.oregon.gov/arcgis/rest/services/Public"
 const bareEarthHSUrl = "https://gis.dogami.oregon.gov/arcgis/services/Public/BareEarthHS/ImageServer/WMSServer?Layers=0"
@@ -45,9 +46,9 @@ const BaseMap = () => {
             </layer.VectorTile>
             */}
 
-            <layer.Tile title="Clatsop County"  opacity={.80}>
-                <source.XYZ url={ccBasemapUrl}/>
-            </layer.Tile>
+            <layer.Image title="Clatsop County"  opacity={.80}>
+                <source.ImageArcGISRest url={ccBasemapUrl} loader="esrijson"/>
+            </layer.Image>
         </>
     );
 }
