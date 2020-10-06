@@ -24,15 +24,24 @@
   },
   "homepage": "https://github.com/Wildsong/webmaps",
   "dependencies": {
+<<<<<<< HEAD
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@fortawesome/react-fontawesome": "^0.1.11",
     "@geonet/geohash": "^1.0.14",
     "@map46/ol-react": "^0.8.4",
+=======
+    "@fortawesome/fontawesome-svg-core": "^1.2.25",
+    "@fortawesome/free-solid-svg-icons": "^5.11.2",
+    "@fortawesome/react-fontawesome": "^0.1.7",
+    "@geonet/geohash": "^1.0.13",
+    "@map46/ol-react": "^0.8.3",
+>>>>>>> a55a17613d955372cefc6d3e1ef16ffc8c0215df
     "@mapbox/maki": "^4.0.0",
     "@turf/buffer": "^5.1.5",
     "@turf/dissolve": "^5.1.5",
     "@turf/helpers": "^6.1.4",
+<<<<<<< HEAD
     "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
     "connected-react-router": "^6.8.0",
@@ -57,6 +66,32 @@
     "react-redux": "^6.0.1",
     "react-router-dom": "^5.2.0",
     "react-select": "^3.1.0",
+=======
+    "axios": "^0.19.0",
+    "bootstrap": "^4.3.1",
+    "connected-react-router": "^6.6.0",
+    "deepmerge": "^4.2.2",
+    "dotenv": "^8.2.0",
+    "html2canvas": "^1.0.0-rc.5",
+    "jspdf": "^1.5.3",
+    "markup-js": "^1.5.21",
+    "modali": "^1.2.0",
+    "moment": "^2.24.0",
+    "ol": "^6.1.1",
+    "ol-ext": "^3.1.7",
+    "pbf": "^3.2.1",
+    "pixelworks": "^1.1.0",
+    "prop-types": "^15.7.2",
+    "query-string": "^6.9.0",
+    "rbush": "^3.0.1",
+    "react": "^16.12.0",
+    "react-bootstrap-table-next": "^3.3.1",
+    "react-bootstrap-table2-toolkit": "^2.1.0",
+    "react-dom": "^16.12.0",
+    "react-redux": "^6.0.1",
+    "react-router-dom": "^5.1.2",
+    "react-select": "^3.0.8",
+>>>>>>> a55a17613d955372cefc6d3e1ef16ffc8c0215df
     "reactstrap": "^6.5.0",
     "redux": "^4.0.5",
     "redux-devtools-extension": "^2.13.8",
@@ -68,6 +103,7 @@
     "uuid": "^3.4.0"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@babel/core": "^7.11.6",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
@@ -77,15 +113,33 @@
     "acorn": "^7.4.1",
     "cssnano": "^4.1.10",
     "eslint": "^6.8.0",
+=======
+    "@babel/core": "^7.7.2",
+    "@babel/plugin-proposal-class-properties": "^7.7.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
+    "@babel/plugin-transform-object-assign": "^7.0.0",
+    "@babel/preset-env": "^7.7.1",
+    "@babel/preset-react": "^7.7.0",
+    "acorn": "^7.1.0",
+    "cssnano": "^4.1.10",
+    "eslint": "^6.6.0",
+>>>>>>> a55a17613d955372cefc6d3e1ef16ffc8c0215df
     "eslint-config-standard": "^13.0.1",
     "eslint-config-standard-react": "^8.0.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.2.1",
+<<<<<<< HEAD
     "eslint-plugin-react": "^7.21.3",
     "eslint-plugin-react-hooks": "^1.6.1",
     "eslint-plugin-standard": "^4.0.1",
     "sass": "^1.26.12"
+=======
+    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-react-hooks": "^1.6.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "sass": "^1.23.7"
+>>>>>>> a55a17613d955372cefc6d3e1ef16ffc8c0215df
   },
   "babel": {
     "presets": [

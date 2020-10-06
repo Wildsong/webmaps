@@ -62,11 +62,6 @@ const gpxStyle = new Style({
     fill: new Fill({color: 'rgba(0,0,255, 0.8)'}),
 });
 
-// FEMA hazards
-// https://hazards.fema.gov/femaportal/wps/portal/NFHLWMS
-//
-const FEMA_NFHL_Url = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
-
 /*
 // Web Markers
 const wfsSource = myGeoServer + "/ows?" + "service=WFS&version=2.0.0&request=GetFeature"
@@ -91,19 +86,16 @@ const xform = (coordinates) => {
 // Clatsop County services
 // map services
 const ccPLSSUrl = myArcGISServer + "/PLSS/MapServer"
-const ccTaxmapAnnoUrl = myArcGISServer + "/Taxmap_annotation/MapServer"
 
-// feature services
-const ccMilepostsUrl = myArcGISServer + "/Highway_Mileposts/FeatureServer/0";
+// Rumsey maps
 
-// FIXME this should be an SVG diamond shape
-const milepostStyle = new Style({
-    image: new Circle({
-        radius: 3,
-        fill: new Fill({color: 'yellow'}),
-        stroke: new Stroke({color: 'yellow', width: 1})
-    })
-});
+// Step one get the XYZ link and follow it in a browser
+// https://maps.georeferencer.com/georeferences/976673237633/2019-07-18T05:13:53.734796Z/map.json?key=mpLuNUCkgUrSGkCrPyoT
+// Step two pull one of the embedded links,
+const columbiaUrl = "https://maps-0.georeferencer.com//georeferences/976673237633/2019-07-18T05:13:53.734796Z/map/{z}/{x}/{y}.png?key=mpLuNUCkgUrSGkCrPyoT"
+
+// 1890 "WHITNEY'S Map of Astoria and Environs"
+const whitneysAstoriaUrl = "https://maps-0.georeferencer.com//georeferences/731856088227/2019-09-14T06:05:24.397134Z/map/{z}/{x}/{y}.png?key=mpLuNUCkgUrSGkCrPyoT"
 
 // FIXME MOVE THIS COMPONENT TO ITS OWN FILE!!!
 // FIXME I think it would be cool to hide columns that are empty here.
@@ -150,7 +142,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
     const [mapLayers] = useState(new Collection([
         new LayerGroup({title: "Base", layers:basemapLayers}),
         new LayerGroup({title: "DOGAMI Hazards", layers:hazardsLayers, visible:false}),
-        new LayerGroup({title: "FEMA Flood", layers:floodLayers, visible:false}),
         new LayerGroup({title: "NOAA Sea Level Rise", layers:sealevelLayers, visible:false}),
         new LayerGroup({title: "Zoning", layers:zoningLayers, visible:false}),
     ]));
@@ -338,15 +329,16 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                 <Map onMoveEnd={onMapMove}>
                     <CollectionProvider collection={basemapLayers}>
                         <BaseMap layerCollection={basemapLayers}/>
+
+                        <layer.Tile title="Whitney's Map of Astoria" opacity={.60}>
+                        <source.XYZ url={whitneysAstoriaUrl}/>
+                        </layer.Tile>
+                        <layer.Tile title="Columbia River Entrance" opacity={.60}>
+                        <source.XYZ url={columbiaUrl}/>
+                        </layer.Tile>
                     </CollectionProvider>
 
                     <DogamiHazards layers={hazardsLayers}/>
-
-                    <CollectionProvider collection={floodLayers}>
-                        <layer.Image title="National Flood Hazard Layer (NFHL)" opacity={.90} reordering={false} visible={true} extent={EXTENT_WM}>
-                            <source.ImageArcGISRest url={FEMA_NFHL_Url}/>
-                        </layer.Image>
-                    </CollectionProvider>
 
                     <SealevelRise layers={sealevelLayers}/>
 
@@ -358,14 +350,6 @@ const MapPage = ({title, center, zoom, setMapExtent}) => {
                             selectionChanged={selectedFeaturesChanged}
                             taxlotLayerRef={taxlotLayerRef}
                             active={currentTool==0}/>
-
-                        <layer.Vector title="Highway mileposts" style={milepostStyle} reordering={false} extent={EXTENT_WM} maxResolution={MAXRESOLUTION}>
-                            <source.JSON url={ccMilepostsUrl} loader="esrijson"/>
-                        </layer.Vector>
-
-                        <layer.Tile title="Taxmap annotation" opacity={.80}>
-                            <source.XYZ url={ccTaxmapAnnoUrl + "/tile/{z}/{y}/{x}"}/>
-                        </layer.Tile>
 
                         <layer.Image title="PLSS (Clatsop County)" reordering={false}>
                             <source.ImageArcGISRest url={ccPLSSUrl} loader="esrijson"/>
